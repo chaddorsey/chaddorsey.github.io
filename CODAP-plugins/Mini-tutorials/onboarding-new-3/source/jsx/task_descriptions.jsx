@@ -100,14 +100,14 @@ taskDescriptions = {
 allAccomplishedFeedback = <div>
   <p>Congratulations! You've done the following:</p>
   <ul>
-    <li>Hide attributes</li>
-    <li>Unhide attributes</li>
-    <li>Create a graph</li>
-    <li>Graph a numerical attribute on the horizontal axis</li>
-    <li>Graph a categorical attribute on the vertical axis</li>
-    <li>Add mean to a distribution</li>
-    <li>Add median to a distribution</li>
-    <li>Remove an attribute from the vertical axis</li>
+    <li>Hidden attributes</li>
+    <li>Unhid attributes</li>
+    <li>Created a graph</li>
+    <li>Graphed a numerical attribute on the horizontal axis</li>
+    <li>Graphed a categorical attribute on the vertical axis</li>
+    <li>Added mean to a distribution</li>
+    <li>Added median to a distribution</li>
+    <li>Removed an attribute from the vertical axis</li>
   </ul>
   <p>You can do a <em>lot</em> with just those skills!</p>
   <p>For more information about how to work with CODAP, visit
