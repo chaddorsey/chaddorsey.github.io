@@ -35,7 +35,7 @@ taskDescriptions = {
       React.createElement(
         'p',
         null,
-        'That\u2019s a good start!  It\u2019s possible to replace which attribute you\u2019ve graphed on the axis, too.'
+        'That\u2019s a good start!  It\'s possible to replace the attribute you\'ve graphed with a different one. It\u2019s possible to replace which attribute you\u2019ve graphed on the axis, too.'
       )
     )
   },
@@ -52,7 +52,7 @@ taskDescriptions = {
       React.createElement(
         'p',
         null,
-        'Great work. Next you will drag another attribute into the middle of the graph to get a sense of the relationship between the two attributes.'
+        'Great work. In a later step you will drag another attribute into the middle of the graph to get a sense of the relationship between the two attributes.'
       )
     ),
     alt_feedback: React.createElement(
@@ -219,7 +219,7 @@ allAccomplishedFeedback = React.createElement(
       null,
       'lot'
     ),
-    ' with just those five skills!'
+    ' with just those seven skills!'
   ),
   React.createElement(
     'p',

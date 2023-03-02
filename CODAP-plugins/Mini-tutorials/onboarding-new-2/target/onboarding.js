@@ -477,9 +477,7 @@ class TutorialView extends React.Component {
         'div',
         { className: 'App-taskarea' },
         this.taskList
-      ),
-      React.createElement('img', { src: './resources/infoIcon.png', className: 'App-info',
-        onClick: this.handleInfoClick })
+      )
     );
   }
 }

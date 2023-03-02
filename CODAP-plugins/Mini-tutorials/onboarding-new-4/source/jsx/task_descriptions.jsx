@@ -46,7 +46,7 @@ taskDescriptions = {
       operation: 'selectCases', type: ['DG.GraphView'],
       requiresSpecialHandling: true,
       feedback: <div>
-        <p>Great! Notice that both the points you selected and the countries on the map that they correspond to are colored green. This happens because the graph and the map are linked. Do you notice any geographical pattern of the highlighted countries?</p>
+        <p>Great! Notice that both the points you selected and the countries on the map that they correspond to are highlighted. This happens because the graph and the map are linked. Do you notice any geographical pattern of the highlighted countries?</p>
       </div>
     },
     {

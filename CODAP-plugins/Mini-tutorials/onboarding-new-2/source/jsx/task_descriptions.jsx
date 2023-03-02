@@ -20,7 +20,7 @@ taskDescriptions = {
       constraints: [{property: 'attributeName', value:'Total Count of Medical Doctors'}],
       requiresSpecialHandling: true,
       feedback: <div>
-            <p>That’s a good start!  It's possible to replace the attribute you've graphed with a different one.</p>
+            <p>That’s a good start!  It's possible to replace the attribute you've graphed with a different one. It’s possible to replace which attribute you’ve graphed on the axis, too.</p>
           </div>
     },
     

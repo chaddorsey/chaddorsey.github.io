@@ -72,7 +72,7 @@ taskDescriptions = {
       React.createElement(
         'p',
         null,
-        'Great! Notice that both the points you selected and the countries on the map that they correspond to are colored green. This happens because the graph and the map are linked. Do you notice any geographical pattern of the highlighted countries?'
+        'Great! Notice that both the points you selected and the countries on the map that they correspond to are highlighted. This happens because the graph and the map are linked. Do you notice any geographical pattern of the highlighted countries?'
       )
     )
   }, {
@@ -139,17 +139,17 @@ allAccomplishedFeedback = React.createElement(
     React.createElement(
       'li',
       null,
-      'Add an attribute to the vertical axis'
+      'Added an attribute to the vertical axis'
     ),
     React.createElement(
       'li',
       null,
-      'Select countries on a graph'
+      'Selected countries on a graph'
     ),
     React.createElement(
       'li',
       null,
-      'Hide unselected points'
+      'Hid unselected points'
     )
   ),
   React.createElement(

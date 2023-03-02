@@ -158,42 +158,42 @@ allAccomplishedFeedback = React.createElement(
     React.createElement(
       'li',
       null,
-      'Hide attributes'
+      'Hidden attributes'
     ),
     React.createElement(
       'li',
       null,
-      'Unhide attributes'
+      'Unhid attributes'
     ),
     React.createElement(
       'li',
       null,
-      'Create a graph'
+      'Created a graph'
     ),
     React.createElement(
       'li',
       null,
-      'Graph a numerical attribute on the horizontal axis'
+      'Graphed a numerical attribute on the horizontal axis'
     ),
     React.createElement(
       'li',
       null,
-      'Graph a categorical attribute on the vertical axis'
+      'Graphed a categorical attribute on the vertical axis'
     ),
     React.createElement(
       'li',
       null,
-      'Add mean to a distribution'
+      'Added mean to a distribution'
     ),
     React.createElement(
       'li',
       null,
-      'Add median to a distribution'
+      'Added median to a distribution'
     ),
     React.createElement(
       'li',
       null,
-      'Remove an attribute from the vertical axis'
+      'Removed an attribute from the vertical axis'
     )
   ),
   React.createElement(
