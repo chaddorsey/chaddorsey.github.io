@@ -219,7 +219,7 @@ allAccomplishedFeedback = React.createElement(
       null,
       'lot'
     ),
-    ' with just those seven skills!'
+    ' with just those skills!'
   ),
   React.createElement(
     'p',
