@@ -1,3 +1,5 @@
+const CORS_ANYWHERE_URL = 'https://cors-anywhere.herokuapp.com/';
+
 // Replace with your own Purple Air API key
 const PURPLE_AIR_API_KEY = '541AD436-D35F-11ED-B6F4-42010A800007';
 
@@ -13,13 +15,18 @@ const codapInterface = new iframePhone.IframePhoneRpcEndpoint(
 
 // Function to fetch Purple Air data
 async function fetchPurpleAirData() {
-  const response = await fetch(PURPLE_AIR_API_URL);
-  if (!response.ok) {
-    throw new Error(`Error fetching data: ${response.statusText}`);
+    const response = await fetch(CORS_ANYWHERE_URL + PURPLE_AIR_API_URL, {
+      headers: {
+        'X-Requested-With': 'XMLHttpRequest',
+      },
+    });
+    if (!response.ok) {
+      throw new Error(`Error fetching data: ${response.statusText}`);
+    }
+    const data = await response.json();
+    return data.data;
   }
-  const data = await response.json();
-  return data.data;
-}
+  
 
 // Function to create a dataset in CODAP
 async function createDataset() {
