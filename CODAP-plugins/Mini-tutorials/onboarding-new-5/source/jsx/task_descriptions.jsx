@@ -3,7 +3,7 @@ hasMouse = true;  // This is a kludge to prevent loading of Mammals on touch dev
 taskDescriptions = {
   descriptions: [
     {
-      key: 'MakeGraph', label: 'Create a graph.', url: './resources/videos/DF_tutorial_1_1.mp4',
+      key: 'MakeGraph', label: 'Create a graph.', url: './resources/videos/DF_Tutorial_1_1.mp4',
       operation: 'create', type: 'graph',
       requiresSpecialHandling: true,
       feedback: <div>
@@ -15,7 +15,7 @@ taskDescriptions = {
     // do we include    "axisOrientation": "horizontal"  in constraints?
     {
       key: 'AddHeight', label: 'Drag "Height (cm)” onto the horizontal axis.',
-      url: './resources/videos/DF_tutorial_1_2.mp4',
+      url: './resources/videos/DF_Tutorial_1_2.mp4',
       operation: 'attributeChange', type: 'DG.GraphView',
       //constraints: [{property: 'attributeName', value:'Height'}],
       requiresSpecialHandling: true,
@@ -26,7 +26,7 @@ taskDescriptions = {
     
     {
       key: 'MakeLegend', label:'Drag “Height (cm)” to the middle of the graph to color the points in the graph.',
-      url: './resources/videos/DF_tutorial_1_3.mp4',
+      url: './resources/videos/DF_Tutorial_1_3.mp4',
       operation: 'legendAttributeChange', type: 'DG.GraphModel',
       requiresSpecialHandling: true,
       //constraints: [ {property: 'attributeName', value: 'Height (cm)'}],
@@ -39,7 +39,7 @@ taskDescriptions = {
     // Select any point on the graph 
     // I don't know if the constraints line should be here or not.
     {
-      key: 'SelectAnyPoint', label: 'Select a point on the graph', url: './resources/videos/DF_tutorial_1_4.mp4',
+      key: 'SelectAnyPoint', label: 'Select a point on the graph', url: './resources/videos/DF_Tutorial_1_4.mp4',
       operation: 'selectCases', type:'DG.GraphView',
       //constraints: [{property: '[selectCases]', value:''}],
       prereq: 'MakeGraph',
@@ -52,7 +52,7 @@ taskDescriptions = {
     // Display the mean
     // Should this have a prerequisite of MakeGraph ?
     {
-      key: 'ToggleMean', label: 'Display the mean', url: './resources/videos/DF_tutorial_1_5.mp4',
+      key: 'ToggleMean', label: 'Display the mean', url: './resources/videos/DF_Tutorial_1_5.mp4',
       operation: 'togglePlottedMean', type: 'DG.GraphView',
       feedback: <div>
         <p>Nice work!  It’s a good idea to explore the palette buttons to discover handy features including mean and median.</p>
@@ -61,7 +61,7 @@ taskDescriptions = {
 
     // Add and remove Gender from vertical axis
     {
-      key: 'AddRemoveGenderVertical', label: 'Drag Gender to the vertical axis and then remove it again', url: './resources/videos/DF_tutorial_1_6.mp4',
+      key: 'AddRemoveGenderVertical', label: 'Drag Gender to the vertical axis and then remove it again', url: './resources/videos/DF_Tutorial_1_6.mp4',
       operation: 'attributeChange', type: 'DG.GraphView',
       constraints: [{property: 'attributeName', value:'Remove Y: Gender'}],
       requiresSpecialHandling: true,
@@ -74,7 +74,7 @@ taskDescriptions = {
     // the first step is binning the points
     // Does this need the prereqs of MakeGraph and AddHeight ?
     //{
-    //  key: 'BinPoints', label: 'Make a histogram in 2 steps. Open the palette to find and select Group into Bins', url: './resources/videos/DF_tutorial_1.5a.mp4',
+    //  key: 'BinPoints', label: 'Make a histogram in 2 steps. Open the palette to find and select Group into Bins', url: './resources/videos/DF_Tutorial_1.5a.mp4',
     //  operation: 'toggle show as BinnedPlot', type: 'DG.GraphView',
       //requiresSpecialHandling: true,
       //prereq: 'MakeGraph', 'AddHeight',
@@ -86,7 +86,7 @@ taskDescriptions = {
         // Make a histogram part 2
         // I included the prereq of the above, BinPoints, is that OK/correct ?
     {
-      key: 'MakeHistogram', label: 'Make a histogram in 2 steps: First, open the palette to find and select \'Group Into Bins\'. Then open it again and select \'Fuse Dots Into Bars\'', url: './resources/videos/DF_tutorial_1_7.mp4',
+      key: 'MakeHistogram', label: 'Make a histogram in 2 steps: First, open the palette to find and select \'Group Into Bins\'. Then open it again and select \'Fuse Dots Into Bars\'', url: './resources/videos/DF_Tutorial_1_7.mp4',
       operation: 'toggle between histogram and dots', type: 'DG.GraphView',
       //requiresSpecialHandling: true,
       //prereq: 'BinPoints',
@@ -97,7 +97,7 @@ taskDescriptions = {
     },
 
     {
-      key: 'MinimizeTable', label: 'Minimize the table', url: './resources/videos/DF_tutorial_1_8a.mp4',
+      key: 'MinimizeTable', label: 'Minimize the table', url: './resources/videos/DF_Tutorial_1_8a.mp4',
       operation: 'toggle minimize component', type: 'DG.TableView',
       requiresSpecialHandling: true,
       feedback: <div>
@@ -105,7 +105,7 @@ taskDescriptions = {
        </div>
       },
     {
-      key: 'ExpandTable', label: 'Expand the table again', url: './resources/videos/DF_tutorial_1_8b.mp4',
+      key: 'ExpandTable', label: 'Expand the table again', url: './resources/videos/DF_Tutorial_1_8b.mp4',
       operation: 'toggle minimize component', type: 'DG.TableView',
       requiresSpecialHandling: true,
       //prereq: 'MinimizeTable',
@@ -115,7 +115,7 @@ taskDescriptions = {
         </div>
       },
       {
-        key: 'ReturnDotPlot', label: 'Open the palette on the graph and click “Points” to return to a dot plot', url: './resources/videos/DF_tutorial_1_9.mp4',
+        key: 'ReturnDotPlot', label: 'Open the palette on the graph and click “Points” to return to a dot plot', url: './resources/videos/DF_Tutorial_1_9.mp4',
         operation: 'toggle show as DotPlot', type: 'DG.GraphView',
         //requiresSpecialHandling: true,
         //prereq: 'MinimizeTable',
@@ -130,7 +130,7 @@ taskDescriptions = {
         // then there is a CreateCollection operation. 
         // Below I used the latter.
     {
-      key: 'GroupByClass', label: 'In the table, drag the attribute Class all the way to the left. When the left edge turns yellow, drop the attribute. ', url: './resources/videos/DF_tutorial_1_10.mp4',
+      key: 'GroupByClass', label: 'In the table, drag the attribute Class all the way to the left. When the left edge turns yellow, drop the attribute. ', url: './resources/videos/DF_Tutorial_1_10.mp4',
       operation: 'createCollection', type: 'DG.TableView',
       constraints: [{property: 'attributeName', value:'Class'}],
       //requiresSpecialHandling: true,
