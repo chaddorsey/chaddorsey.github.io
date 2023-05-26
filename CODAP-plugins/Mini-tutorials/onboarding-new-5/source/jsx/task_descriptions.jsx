@@ -8,7 +8,6 @@ taskDescriptions = {
       requiresSpecialHandling: true,
       feedback: <div>
         <p>Great, you have a graph!  The data points are scattered because nothing has been added to the axis yet.</p>
-        <p>The next step is deciding on an attribute to explore.</p>
       </div>
     },
     
