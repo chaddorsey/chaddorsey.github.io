@@ -7,7 +7,7 @@ taskDescriptions = {
       operation: 'create', type: 'graph',
       requiresSpecialHandling: true,
       feedback: <div>
-        <p>Great, you have a graph!  The data points are scattered because nothing has been added to the axis yet.</p>
+        <p>Great, you have a graph! The data points are scattered because nothing has been added to the axis yet.</p>
       </div>
     },
     
