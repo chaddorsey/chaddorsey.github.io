@@ -3,7 +3,7 @@ hasMouse = true; // This is a kludge to prevent loading of Mammals on touch devi
 
 taskDescriptions = {
   descriptions: [{
-    key: 'MakeGraph', label: 'Create a graph.', url: './resources/videos/DF_tutorial_1.1.mp4',
+    key: 'MakeGraph', label: 'Create a graph.', url: './resources/videos/DF_tutorial_1_1.mp4',
     operation: 'create', type: 'graph',
     requiresSpecialHandling: true,
     feedback: React.createElement(
@@ -25,8 +25,8 @@ taskDescriptions = {
   // Make specific to named attribute (and horizontal axis)
   // do we include    "axisOrientation": "horizontal"  in constraints?
   {
-    key: 'AddHeight', label: 'Drag "Height” onto the horizontal axis.',
-    url: './resources/videos/DF_tutorial_1.2.mp4',
+    key: 'AddHeight', label: 'Drag "Height (cm)” onto the horizontal axis.',
+    url: './resources/videos/DF_tutorial_1_2.mp4',
     operation: 'attributeChange', type: 'DG.GraphView',
     //constraints: [{property: 'attributeName', value:'Height'}],
     requiresSpecialHandling: true,
@@ -41,7 +41,7 @@ taskDescriptions = {
     )
   }, {
     key: 'MakeLegend', label: 'Drag “Height (cm)” to the middle of the graph to color the points in the graph.',
-    url: './resources/videos/DF_tutorial_1.3.mp4',
+    url: './resources/videos/DF_tutorial_1_3.mp4',
     operation: 'legendAttributeChange', type: 'DG.GraphModel',
     requiresSpecialHandling: true,
     //constraints: [ {property: 'attributeName', value: 'Height (cm)'}],
@@ -60,7 +60,7 @@ taskDescriptions = {
   // Select any point on the graph 
   // I don't know if the constraints line should be here or not.
   {
-    key: 'SelectAnyPoint', label: 'Select a point on the graph', url: './resources/videos/DF_tutorial_1.4.mp4',
+    key: 'SelectAnyPoint', label: 'Select a point on the graph', url: './resources/videos/DF_tutorial_1_4.mp4',
     operation: 'selectCases', type: 'DG.GraphView',
     //constraints: [{property: '[selectCases]', value:''}],
     prereq: 'MakeGraph',
@@ -75,7 +75,7 @@ taskDescriptions = {
         React.createElement(
           'em',
           null,
-          ' linked!'
+          'linked'
         ),
         ': the table scrolls to the relevant row for the point you selected in the graph, and highlights it for you. Or, if you select a row in the table, the corresponding point on the graph is also selected.'
       )
@@ -85,7 +85,7 @@ taskDescriptions = {
   // Display the mean
   // Should this have a prerequisite of MakeGraph ?
   {
-    key: 'ToggleMean', label: 'Display the mean', url: './resources/videos/DF_tutorial_1.5.mp4',
+    key: 'ToggleMean', label: 'Display the mean', url: './resources/videos/DF_tutorial_1_5.mp4',
     operation: 'togglePlottedMean', type: 'DG.GraphView',
     feedback: React.createElement(
       'div',
@@ -100,7 +100,7 @@ taskDescriptions = {
 
   // Add and remove Gender from vertical axis
   {
-    key: 'AddRemoveGenderVertical', label: 'Drag Gender to the vertical axis and then remove it again', url: './resources/videos/DF_tutorial_1.6.mp4',
+    key: 'AddRemoveGenderVertical', label: 'Drag Gender to the vertical axis and then remove it again', url: './resources/videos/DF_tutorial_1_6.mp4',
     operation: 'attributeChange', type: 'DG.GraphView',
     constraints: [{ property: 'attributeName', value: 'Remove Y: Gender' }],
     requiresSpecialHandling: true,
@@ -131,7 +131,7 @@ taskDescriptions = {
   // Make a histogram part 2
   // I included the prereq of the above, BinPoints, is that OK/correct ?
   {
-    key: 'MakeHistogram', label: 'Make a histogram in 2 steps: First, open the palette to find and select \'Group Into Bins\'. Then open it again and select \'Fuse Dots Into Bars\'', url: './resources/videos/DF_tutorial_1.7.mp4',
+    key: 'MakeHistogram', label: 'Make a histogram in 2 steps: First, open the palette to find and select \'Group Into Bins\'. Then open it again and select \'Fuse Dots Into Bars\'', url: './resources/videos/DF_tutorial_1_7.mp4',
     operation: 'toggle between histogram and dots', type: 'DG.GraphView',
     //requiresSpecialHandling: true,
     //prereq: 'BinPoints',
@@ -145,7 +145,7 @@ taskDescriptions = {
       )
     )
   }, {
-    key: 'MinimizeTable', label: 'Minimize the table', url: './resources/videos/DF_tutorial_1.8a.mp4',
+    key: 'MinimizeTable', label: 'Minimize the table', url: './resources/videos/DF_tutorial_1_8a.mp4',
     operation: 'toggle minimize component', type: 'DG.TableView',
     requiresSpecialHandling: true,
     feedback: React.createElement(
@@ -158,7 +158,7 @@ taskDescriptions = {
       )
     )
   }, {
-    key: 'ExpandTable', label: 'Expand the table again', url: './resources/videos/DF_tutorial_1.8b.mp4',
+    key: 'ExpandTable', label: 'Expand the table again', url: './resources/videos/DF_tutorial_1_8b.mp4',
     operation: 'toggle minimize component', type: 'DG.TableView',
     requiresSpecialHandling: true,
     //prereq: 'MinimizeTable',
@@ -177,7 +177,7 @@ taskDescriptions = {
       )
     )
   }, {
-    key: 'ReturnDotPlot', label: 'Open the palette on the graph and click “Points” to return to a dot plot', url: './resources/videos/DF_tutorial_1.9.mp4',
+    key: 'ReturnDotPlot', label: 'Open the palette on the graph and click “Points” to return to a dot plot', url: './resources/videos/DF_tutorial_1_9.mp4',
     operation: 'toggle show as DotPlot', type: 'DG.GraphView',
     //requiresSpecialHandling: true,
     //prereq: 'MinimizeTable',
@@ -198,7 +198,7 @@ taskDescriptions = {
   // then there is a CreateCollection operation. 
   // Below I used the latter.
   {
-    key: 'GroupByClass', label: 'In the table, drag the attribute Class all the way to the left. When the left edge turns yellow, drop the attribute. ', url: './resources/videos/DF_tutorial_1.10.mp4',
+    key: 'GroupByClass', label: 'In the table, drag the attribute Class all the way to the left. When the left edge turns yellow, drop the attribute. ', url: './resources/videos/DF_tutorial_1_10.mp4',
     operation: 'createCollection', type: 'DG.TableView',
     constraints: [{ property: 'attributeName', value: 'Class' }],
     //requiresSpecialHandling: true,
