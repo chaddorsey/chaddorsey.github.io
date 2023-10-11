@@ -35,6 +35,7 @@ const DATASETS = [
       'State',
       'FIPS',
       'County',
+      'County_Full',
       'boundary',
       'Average Life Expectancy (years)',
       'Days of Poor Physical Health (days/month)',
@@ -69,7 +70,7 @@ const DATASETS = [
       'Severe Housing Problems (%)',
       'Proficient in English (%)',
       'Youth Not in School or Employment (%)',
-      'Income Level ‚Äì State'
+      'Income Level'
   ],  
   overriddenAttributes: [
     {
@@ -82,11 +83,15 @@ const DATASETS = [
       name: 'FIPS',
     },
     {
+      name: 'County_Full',
+      formula: 'concat(County, ", ", State)',
+    },
+    {
       name: 'County',
     },
     {
       name: 'boundary',
-      formula: 'lookupBoundary(US_county_boundaries,County)',
+      formula: 'lookupBoundary(US_county_boundaries,County_Full)',
     },
     {
       name: 'Average Life Expectancy (years)',
