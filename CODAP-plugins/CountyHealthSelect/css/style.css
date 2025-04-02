@@ -540,3 +540,48 @@ input[type=radio]:checked:before {
     color: #999;
     padding: 10px 0;
 }
+
+/* Dataset selector styles */
+.datasource {
+  margin: 10px 0;
+}
+
+.datasource h2 {
+  font-family: Montserrat, sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--teal-dark);
+  margin: 0;
+  padding: 8px 0;
+}
+
+/* State selector styles */
+.datasource select {
+  font-family: Montserrat, sans-serif;
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: 3px;
+  border: 1px solid var(--teal-light);
+  background-color: white;
+  color: var(--text);
+  max-width: 100%;
+  margin: 5px 0;
+  width: auto;
+}
+
+.datasource div {
+  max-height: unset;
+  overflow-y: visible;
+  margin-left: 1em;
+  transition: none;
+}
+
+.datasource label {
+  font-weight: 500;
+  margin: 5px 0;
+  display: inline-block;
+}
+
+.datasource p {
+  margin: 8px 0;
+}

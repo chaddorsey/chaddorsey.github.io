@@ -238,12 +238,21 @@ function createDatasetUI(parentEl, datasetDef) {
   parentEl.append(el);
 }
 
-function createDatasetSelector(datasetId, datasetName, ix) {
-  return createElement('div', ['datasource'],
-      [createAttribute('id', datasetId), createElement('h3', null,
-          [createElement('input', null,
-              [createAttribute('type', 'radio'), createAttribute('name',
-                  'source'), createAttribute('value', ix)]), datasetName]),]);
+/**
+ * Creates a selector div for a dataset choice
+ * @param id
+ * @param name
+ * @param ix
+ * @return {HTMLDivElement}
+ */
+function createDatasetSelector(id, name, ix) {
+  let elem = document.createElement('div');
+  elem.id = id;
+  elem.classList.add('datasource');
+  let h2 = document.createElement('h2');
+  h2.innerText = name;
+  elem.append(h2);
+  return elem;
 }
 
 function getCheckboxValue(selector) {

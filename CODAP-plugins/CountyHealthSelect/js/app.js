@@ -761,39 +761,25 @@ function createUI() {
   // Clear existing content
   anchor.innerHTML = '';
   
-  // Create UI for the displayed datasets
+  // Create UI for the displayed datasets (we'll only have one)
   displayedDatasets.forEach(function (dsId) {
     let ix = DATASETS.findIndex(function (d) { return d.id === dsId });
     if (ix >= 0) {
-      let ds = DATASETS[ix]
+      let ds = DATASETS[ix];
       let el = ui.createDatasetSelector(ds.id, ds.name, ix);
 
       if (ds.uiCreate) {
         ds.uiCreate(el);
       } else {
+        // Make sure we create the UI components including the state dropdown
         ui.createDatasetUI(el, ds);
       }
       anchor.append(el);
-      if (ds.id === DEFAULT_DATASET) {
-        let input = el.querySelector('input');
-        input.checked = true;
-        el.classList.add('selected-source')
-      }
+      
+      // Make the dataset visible by adding the selected-source class
+      el.classList.add('selected-source');
     }
   });
-  
-  // Set up event handlers for radio buttons, text inputs, etc.
-  document.querySelectorAll('input[type=radio][name=source]')
-    .forEach((el) => el.addEventListener('click', selectDatasetHandler));
-  
-  document.querySelectorAll('input[type=text]')
-    .forEach(function (el) { 
-      el.addEventListener('keydown', function (ev) {
-        if (ev.key === 'Enter') {
-          fetchHandler(ev);
-        }
-      });
-    });
   
   // Set up event listeners for get data button
   let getDataButton = document.querySelector('.fe-fetch-button');
@@ -959,16 +945,10 @@ function csvToJSON(data) {
 
 /**
  * UI/model Utility: determine selected dataset and look it up
- * @return {{selectedAttributeNames: string[], makeURL: (function(): string), endpoint: string, preprocess: [{oldKey: string, newKey: string, type: string}, {oldKey: string, newKey: string, type: string}, {dataKey: string, type: string, mergeKey: string}, {dataKey: string, type: string}, {yearKey: string, dateKey: string, type: string}], documentation: string, name: string, id: string, overriddenAttributes: [{name: string}, {name: string}, {name: string, description: string}, {name: string, description: string}, {precision: string, name: string, description: string, type: string}, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], timeSeriesAttribute: string, uiComponents: [{text: string, type: string}, {lister: (function(): (string)[]), name: string, label: string, type: string}], parentAttributes: string[]}|{selectedAttributeNames: string[], makeURL: (function(): string), endpoint: string, preprocess: [{oldKey: string, newKey: string, type: string}, {oldKey: string, newKey: string, type: string}, {dataKey: string, type: string, mergeKey: string}, {dataKey: string, type: string}, {yearKey: string, dateKey: string, type: string}], documentation: string, name: string, id: string, overriddenAttributes: [{name: string}, {name: string}, {name: string, description: string}, {name: string, description: string}, {precision: string, name: string, description: string, type: string}, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null], timeSeriesAttribute: string, uiComponents: [{text: string, type: string}, {lister: (function(): *[]), name: string, label: string, type: string}], parentAttributes: string[]}}
+ * @return {Object} The dataset specification
  */
 function getCurrentDatasetSpec() {
-  let sourceSelect = document.querySelector('input[name=source]:checked');
-  if (!sourceSelect) {
-    return;
-  }
-  //console.log(`sourceSelect: ${sourceSelect}`)
-  //console.dir(sourceSelect)
-  //let sourceIX = Number(sourceSelect.value);
+  // Always use the first dataset since we only have one
   let sourceIX = 0;
   
   // Create a copy of the dataset to modify with the current attribute selections
