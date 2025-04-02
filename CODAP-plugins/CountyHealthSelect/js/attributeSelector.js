@@ -172,6 +172,18 @@ function generateAttributeButtons() {
 }
 
 /**
+ * Notify that attribute selection has changed
+ */
+function notifyAttributeSelectionChanged() {
+  // Create and dispatch a custom event
+  const event = new CustomEvent('attribute-selection-changed', {
+    bubbles: true,
+    detail: { hasSelectedAttributes: hasSelectedAttributes() }
+  });
+  document.dispatchEvent(event);
+}
+
+/**
  * Handle click on the "All" button
  * @param {Event} event - The click event
  */
@@ -213,6 +225,9 @@ function handleAllButtonClick(event) {
   
   // Update attribute count display
   updateAttributeCount(categoryId);
+  
+  // Notify attribute selection changed
+  notifyAttributeSelectionChanged();
 }
 
 /**
@@ -276,6 +291,9 @@ function handleAttributeButtonClick(event) {
   
   // Update attribute count display
   updateAttributeCount(categoryId);
+  
+  // Notify attribute selection changed
+  notifyAttributeSelectionChanged();
 }
 
 /**
@@ -328,6 +346,9 @@ function handleCategoryToggle(event) {
     categorySection.querySelector('.attribute-count').innerHTML = 
       `<i>No attributes included</i>`;
   }
+  
+  // Notify attribute selection changed
+  notifyAttributeSelectionChanged();
 }
 
 /**
@@ -351,5 +372,84 @@ function getTotalCount(categoryId) {
 // Export the public interface
 export {
   initializeAttributeSelector,
-  attributeSelectorState
-}; 
+  attributeSelectorState,
+  getSelectedAttributes,
+  getSelectedAttributesForCategory,
+  isCategoryEnabled,
+  hasSelectedAttributes
+};
+
+/**
+ * Get all selected attribute names across all categories
+ * @returns {string[]} Array of selected attribute names
+ */
+function getSelectedAttributes() {
+  const selectedAttributes = [];
+  
+  // Iterate through all categories
+  for (const categoryId in attributeDefinitions) {
+    // Skip disabled categories
+    if (!attributeSelectorState.categories[categoryId].enabled) {
+      continue;
+    }
+    
+    // Get attributes for this category
+    const categoryAttributes = getSelectedAttributesForCategory(categoryId);
+    selectedAttributes.push(...categoryAttributes);
+  }
+  
+  // Add core attributes that should always be included
+  const coreAttributes = [
+    'State',
+    'FIPS',
+    'County',
+    'County_Full',
+    'boundary'
+  ];
+  
+  // Combine core and selected attributes (avoiding duplicates)
+  return [...new Set([...coreAttributes, ...selectedAttributes])];
+}
+
+/**
+ * Get selected attribute names for a specific category
+ * @param {string} categoryId - The category identifier
+ * @returns {string[]} Array of selected attribute names for the category
+ */
+function getSelectedAttributesForCategory(categoryId) {
+  // If category is disabled, return empty array
+  if (!isCategoryEnabled(categoryId)) {
+    return [];
+  }
+  
+  const selectedAttributeIds = Array.from(attributeSelectorState.categories[categoryId].attributes);
+  const attributes = attributeDefinitions[categoryId];
+  
+  // Map IDs to actual attribute names
+  return selectedAttributeIds.map(id => {
+    const attribute = attributes.find(attr => attr.id === id);
+    return attribute ? attribute.name : null;
+  }).filter(name => name !== null);
+}
+
+/**
+ * Check if a category is enabled
+ * @param {string} categoryId - The category identifier
+ * @returns {boolean} True if the category is enabled
+ */
+function isCategoryEnabled(categoryId) {
+  return attributeSelectorState.categories[categoryId]?.enabled || false;
+}
+
+/**
+ * Check if there are any selected attributes across all categories
+ * @returns {boolean} True if at least one attribute is selected
+ */
+function hasSelectedAttributes() {
+  for (const categoryId in attributeSelectorState.categories) {
+    if (isCategoryEnabled(categoryId) && attributeSelectorState.categories[categoryId].attributes.size > 0) {
+      return true;
+    }
+  }
+  return false;
+} 
