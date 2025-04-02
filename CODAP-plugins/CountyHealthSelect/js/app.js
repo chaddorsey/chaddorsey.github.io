@@ -99,11 +99,11 @@ const DATASETS = [
     },
     {
       name: 'Days of Poor Physical Health (days/month)',
-      description: 'Adults were asked the following question: “Thinking about your physical health&comma; which includes physical illness and injury&comma; for how many days during the past 30 days was your physical health not good?” The value represents the average number of days reported.',
+      description: 'Adults were asked the following question: "Thinking about your physical health&comma; which includes physical illness and injury&comma; for how many days during the past 30 days was your physical health not good?" The value represents the average number of days reported.',
     },
     {
       name: 'Days of Poor Mental Health (days/month)',
-      description: 'Adults were asked the following question: “Thinking about your mental health&comma; which includes stress&comma; depression&comma; and problems with emotions&comma; for how many days during the past 30 days was your mental health not good?" The value represents the average number of days reported.',
+      description: 'Adults were asked the following question: "Thinking about your mental health&comma; which includes stress&comma; depression&comma; and problems with emotions&comma; for how many days during the past 30 days was your mental health not good?" The value represents the average number of days reported.',
     },
     {
       name: 'Students Graduating from High School (%)',
@@ -762,7 +762,6 @@ function init() {
     dimensions:{width: 360, height: 440},
     preventDataContextReorg: false
   }).then(createUI);
-
 }
 
 /**
@@ -1037,3 +1036,6 @@ function fetchDataAndProcess() {
 
 // And off we go...
 window.addEventListener('load', init);
+
+// Export the initializeApp function
+export { init as initializeApp };
