@@ -52,9 +52,13 @@
 body {
   background-color: white;
   font-size: smaller;
-    margin: 0;
-    padding: 0;
-    overflow-y: hidden;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  width: 100%;
+  height: 100%;
+  min-height: 600px;
+  box-sizing: border-box;
 }
 
 body.busy {
@@ -90,7 +94,8 @@ main {
     font-size: 12px;
     font-weight: 500;
     color: var(--text);
-    height: 100vh;
+    height: 100%;
+    min-height: 600px;
     margin: 0;
     padding: 0 12px;
     position: relative;
@@ -98,7 +103,9 @@ main {
     flex-direction: column;
     flex-wrap: nowrap;
     justify-content: stretch;
-    max-width: 600px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .fe-hide {
@@ -385,36 +392,39 @@ input[type=radio]:checked:before {
 
 /* Attribute Selector Styles */
 .fe-attribute-selector {
-    font-family: Montserrat, sans-serif;
-    padding: 12px;
-    flex: 1 1 auto;
-    overflow-y: auto;
-    margin: 0 -12px; /* Compensate for main padding */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  margin: 8px 0;
+  min-height: 200px;
 }
 
 .fe-attribute-selector .category-section {
-    margin: 0;
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--teal-light-12);
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--teal-light-25);
+  padding-bottom: 5px;
 }
 
 .fe-attribute-selector .fe-section-header-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 0;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 3px 0;
 }
 
 .fe-attribute-selector .expansion-indicator {
-    width: 0;
-    height: 0;
-    border-left: 8px solid var(--teal-dark);
-    border-top: 6px solid transparent;
-    border-bottom: 6px solid transparent;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    flex-shrink: 0;
+  cursor: pointer;
+  content: '';
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  border-width: 5px 0 5px 8px;
+  border-color: transparent transparent transparent var(--teal-dark);
+  margin-right: 5px;
+  transition: transform 0.2s ease-in-out;
 }
 
 .fe-attribute-selector .category-section.expanded .expansion-indicator {
@@ -567,6 +577,7 @@ input[type=radio]:checked:before {
   max-width: 100%;
   margin: 5px 0;
   width: auto;
+  box-sizing: border-box;
 }
 
 .datasource div {
@@ -584,4 +595,63 @@ input[type=radio]:checked:before {
 
 .datasource p {
   margin: 8px 0;
+}
+
+/* Add responsive styles for different screen sizes */
+@media (max-width: 400px) {
+  body {
+    font-size: 11px;
+  }
+  
+  main {
+    padding: 0 8px;
+  }
+  
+  .fe-button {
+    padding: 4px;
+    margin: 4px;
+  }
+  
+  .fe-attribute-selector .fe-section-header-line {
+    padding: 2px 0;
+  }
+  
+  .fe-attribute-selector .attribute-button {
+    margin: 3px;
+    padding: 3px 5px;
+    font-size: 11px;
+  }
+  
+  .fe-attribute-selector .category-title {
+    font-size: 13px;
+  }
+  
+  .fe-attribute-selector .attribute-count {
+    font-size: 10px;
+  }
+  
+  .datasource select {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+  
+  .contents {
+    padding: 5px 0;
+  }
+}
+
+@media (min-width: 600px) {
+  main {
+    max-width: none;
+    margin: 0 auto;
+  }
+}
+
+.contents {
+  padding: 10px 0;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 80px;
+  box-sizing: border-box;
+  overflow-y: visible;
 }

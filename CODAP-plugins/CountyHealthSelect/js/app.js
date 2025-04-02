@@ -732,11 +732,43 @@ function initializeApp() {
     title: APP_NAME,
     version: "0.1",
     dimensions: {
-      width: 350,
-      height: 500
+      width: 400,
+      height: 600
     },
     preventDataContextReorg: false
-  }).then(createUI);
+  }).then(createUI)
+  .then(() => {
+    // Add resize handler that maintains minimum dimensions
+    window.addEventListener('resize', function() {
+      // Get current dimensions
+      const width = Math.max(window.innerWidth, 400);
+      const height = Math.max(window.innerHeight, 600);
+      
+      // Update the iframe dimensions when window size changes
+      codapInterface.sendRequest({
+        action: 'update',
+        resource: 'interactiveFrame',
+        values: {
+          dimensions: {
+            width: width,
+            height: height
+          }
+        }
+      });
+    });
+    
+    // Ensure we have sufficient initial height
+    codapInterface.sendRequest({
+      action: 'update',
+      resource: 'interactiveFrame',
+      values: {
+        dimensions: {
+          width: Math.max(window.innerWidth, 400),
+          height: Math.max(window.innerHeight, 600)
+        }
+      }
+    });
+  });
   
   // Listen for attribute selection changes
   document.addEventListener('attribute-selection-changed', function(event) {
