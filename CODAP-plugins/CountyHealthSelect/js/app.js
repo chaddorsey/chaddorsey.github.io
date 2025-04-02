@@ -233,13 +233,10 @@ const DEFAULT_DISPLAYED_DATASETS = [
   'CountyHealthByState',
 ];
 const DEFAULT_DATASET = 'CountyHealthByState';
-const DOWNSAMPLE_GOAL_DEFAULT = 1000;
-const DOWNSAMPLE_GOAL_MAX = 1000;
 const CHILD_COLLECTION_NAME = 'cases';
 const PARENT_COLLECTION_NAME = 'groups';
 
 let displayedDatasets = DEFAULT_DISPLAYED_DATASETS;
-let downsampleGoal = DOWNSAMPLE_GOAL_DEFAULT;
 let isInFetch = false;
 
 /**
@@ -873,46 +870,6 @@ function getAttributeNamesFromData(array) {
 }
 
 /**
- * A utility to downsample a dataset by selecting a random subset without
- * replacement.
- * @param data
- * @param targetCount
- * @param start
- * @return {*[]}
- */
-function downsampleRandom(data, targetCount, start) {
-  let dataLength = data.length - start;
-  let ct = Math.min(dataLength, Math.max(0, targetCount));
-  let randomAreSelected = ct < (dataLength/2);
-  let pickArray = new Array(dataLength).fill(!randomAreSelected);
-  if (!randomAreSelected) {
-    ct = dataLength - ct;
-  }
-
-  // construct an array of selection choices
-  let i = 0;
-  while (i < ct) {
-    let value = Math.floor(Math.random()*dataLength);
-    if (pickArray[value] !== randomAreSelected) {
-      i++;
-      pickArray[value] = randomAreSelected;
-    }
-  }
-
-  let newData = [];
-  // copy the non-data rows
-  for (let ix = 0; ix < start; ix += 1) {
-    newData.push(data[ix]);
-  }
-  // use pick array to determine if we should add each row of original table to new
-  pickArray.forEach(function(shouldPick, ix) {
-    if (shouldPick) newData.push(data[ix + start]);
-  });
-
-  return newData;
-}
-
-/**
  * CODAP API Utility that makes an array of CODAP Attribute Specs from the
  * dataset definition and the attribute names discovered in the data.
  *
@@ -1088,10 +1045,7 @@ function fetchDataAndProcess() {
           nData = preprocessData(nData, datasetSpec.preprocess);
           console.log('Preprocess step', nData)
         }
-        // downsample the data, if necessary
-        if (ui.getCheckboxValue('#fe-downsample') && downsampleGoal) {
-          nData = downsampleRandom(nData, downsampleGoal, 0);
-        }
+        
         // create the specification of the CODAP collections
         let collectionList = resolveCollectionList(datasetSpec, getAttributeNamesFromData(
             nData));
