@@ -20,6 +20,7 @@
 /*global Papa:true*/
 import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
+import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
 
 const APP_NAME = 'County Health Datasets';
 
@@ -654,7 +655,8 @@ async function selectHandler() {
  * @param datasetName {string}
  * @return {Promise<*|{success: boolean}>}
  */
-async function clearData (datasetName) {
+async function clearDataByName(datasetName) {
+  console.log('Clearing data for dataset:', datasetName);
   let result = await codapInterface.sendRequest({
     action: 'get', resource: `dataContext[${datasetName}]`
   });
@@ -698,15 +700,74 @@ async function selectComponent(componentID) {
   });
 }
 
+/**
+ * Update the fetch button state based on attribute selections
+ */
+function updateFetchButtonState() {
+  const getDataButton = document.querySelector('.fe-fetch-button');
+  const hasAttributes = hasSelectedAttributes();
+  
+  console.log('Updating fetch button state, hasAttributes:', hasAttributes);
+  
+  // Enable/disable the button based on whether there are any selected attributes
+  if (hasAttributes) {
+    getDataButton.removeAttribute('disabled');
+    getDataButton.title = 'Get data and send to CODAP';
+    getDataButton.style.opacity = '1';
+    getDataButton.style.cursor = 'pointer';
+  } else {
+    getDataButton.setAttribute('disabled', 'disabled');
+    getDataButton.title = 'Select at least one attribute first';
+    getDataButton.style.opacity = '0.5';
+    getDataButton.style.cursor = 'not-allowed';
+  }
+}
 
 /**
- * Creates the plugin UI and associates the correct event handlers.
+ * Initializes the web application
+ *   * Connects with CODAP
+ *   * Creates UI
  */
-function createUI () {
+function initializeApp() {
+  // Set up the CODAP connection
+  return codapInterface.init({
+    name: APP_NAME,
+    title: APP_NAME,
+    version: "0.1",
+    dimensions: {
+      width: 350,
+      height: 500
+    },
+    preventDataContextReorg: false
+  }).then(createUI);
+  
+  // Listen for attribute selection changes
+  document.addEventListener('attribute-selection-changed', function(event) {
+    console.log('Attribute selection changed event received');
+    updateFetchButtonState();
+  });
+}
+
+/**
+ * Creates the UI
+ */
+function createUI() {
+  console.log('Creating UI');
+  
+  // Create the dataset UI from our dataset definitions
   let anchor = document.querySelector('.contents');
+  if (!anchor) {
+    console.error('Contents anchor not found');
+    return;
+  }
+  
+  // Clear existing content
+  anchor.innerHTML = '';
+  
+  // Create UI for the displayed datasets
   displayedDatasets.forEach(function (dsId) {
-    let ix = DATASETS.findIndex(function (d) {return d.id === dsId});
-    if (ix>=0) {
+    let ix = DATASETS.findIndex(function (d) { return d.id === dsId });
+    if (ix >= 0) {
       let ds = DATASETS[ix]
       let el = ui.createDatasetSelector(ds.id, ds.name, ix);
 
@@ -722,46 +783,77 @@ function createUI () {
         el.classList.add('selected-source')
       }
     }
-  })
+  });
+  
+  // Set up event handlers for radio buttons, text inputs, etc.
   document.querySelectorAll('input[type=radio][name=source]')
-      .forEach((el) => el.addEventListener('click', selectDatasetHandler))
+    .forEach((el) => el.addEventListener('click', selectDatasetHandler));
+  
   document.querySelectorAll('input[type=text]')
-      .forEach(function (el) { el.addEventListener('keydown', function (ev) {
+    .forEach(function (el) { 
+      el.addEventListener('keydown', function (ev) {
         if (ev.key === 'Enter') {
           fetchHandler(ev);
         }
-      })})
-  let button = document.querySelector('button.fe-fetch-button');
-  button.addEventListener('click', fetchHandler);
+      });
+    });
+  
+  // Set up event listeners for get data button
+  let getDataButton = document.querySelector('.fe-fetch-button');
+  if (getDataButton) {
+    console.log('Found fetch button:', getDataButton);
+    
+    // Handle fetch button click
+    getDataButton.addEventListener('click', function(ev) {
+      console.log('Fetch button clicked');
+      ev.preventDefault();
+      ev.stopPropagation();
+      if (!isInFetch) {
+        isInFetch = true;
+        fetchDataAndProcess().then(function() {
+          isInFetch = false;
+        }).catch(function(reason) {
+          isInFetch = false;
+          console.log(`Fetch or processing failed: ${reason}.`);
+          ui.setTransferStatus('error', `Fetch of data failed: ${reason}`);
+        });
+      }
+    });
+  } else {
+    console.error('Fetch button not found');
+  }
+  
+  // Set up event listeners for clear button
+  let clearButton = document.querySelector('.fe-clear-button');
+  if (clearButton) {
+    clearButton.addEventListener('click', function(ev) {
+      console.log('Clear button clicked');
+      ev.preventDefault();
+      ev.stopPropagation();
+      let datasetSpec = getCurrentDatasetSpec();
+      if (datasetSpec) {
+        clearDataByName(datasetSpec.name);
+      }
+    });
+  }
+  
+  // Initialize the UI module
   ui.initialize({
     selectHandler: selectHandler,
     clearData: clearDataHandler
   });
-  ui.setTransferStatus("success", "Ready")
-}
-
-/**
- * Initializes the web application
- *   * Connects with CODAP
- *   * Creates UI
- */
-function init() {
-  let datasets = (new URL(document.location)).searchParams.get('datasets');
-  if (datasets) {
-    if (datasets === 'all') {
-      datasets = DATASETS.map(function (ds) { return ds.id; });
-    } else {
-      datasets = datasets.split(',');
-    }
-    displayedDatasets = datasets;
-  }
-
-  codapInterface.init({
-    name: APP_NAME,
-    title: APP_NAME,
-    dimensions:{width: 360, height: 440},
-    preventDataContextReorg: false
-  }).then(createUI);
+  
+  // Update the fetch button state based on attribute selections
+  updateFetchButtonState();
+  
+  // Listen for attribute selection changes
+  document.addEventListener('attribute-selection-changed', function(event) {
+    console.log('Attribute selection changed event received');
+    updateFetchButtonState();
+  });
+  
+  // Set initial status
+  ui.setTransferStatus("success", "Ready");
 }
 
 /**
@@ -921,7 +1013,14 @@ function getCurrentDatasetSpec() {
   //console.dir(sourceSelect)
   //let sourceIX = Number(sourceSelect.value);
   let sourceIX = 0;
-  return DATASETS[sourceIX];
+  
+  // Create a copy of the dataset to modify with the current attribute selections
+  const datasetSpec = Object.assign({}, DATASETS[sourceIX]);
+  
+  // Use attribute selector to get currently selected attributes
+  datasetSpec.selectedAttributeNames = getSelectedAttributes();
+  
+  return datasetSpec;
 }
 
 /**
@@ -960,7 +1059,7 @@ function preprocessData(data, preprocessActions) {
  */
 function fetchDataAndProcess() {
   let datasetSpec = getCurrentDatasetSpec();
-  console.log(datasetSpec)
+  console.log('Fetching data with dataset spec:', datasetSpec);
   if (!datasetSpec) {
     ui.setTransferStatus('inactive', 'Pick a source')
     return Promise.reject('No source selected');
@@ -968,7 +1067,7 @@ function fetchDataAndProcess() {
 
   // fetch the data
   let url = datasetSpec.makeURL();
-  console.log(url)
+  console.log('Fetching from URL:', url);
   let headers = new Headers();
   if (datasetSpec.apiToken) {
     headers.append('X-App-Token', datasetSpec.apiToken);
@@ -1034,8 +1133,13 @@ function fetchDataAndProcess() {
   });
 }
 
-// And off we go...
-window.addEventListener('load', init);
+// No longer auto-initialize on window load
+// window.addEventListener('load', init);
 
-// Export the initializeApp function
-export { init as initializeApp };
+// Export the public interface
+export { 
+  initializeApp,
+  hasSelectedAttributes,
+  updateFetchButtonState,
+  getCurrentDatasetSpec
+};
