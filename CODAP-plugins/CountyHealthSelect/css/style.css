@@ -382,3 +382,68 @@ input[type=radio]:checked:before {
     content: var(--icon-radio-button-checked);
     color: var(--teal-dark);
 }
+
+/* Attribute Selector Styles */
+.fe-attribute-selector {
+    font-family: Montserrat, sans-serif;
+    padding: 12px;
+    flex: 1 1 auto;
+    overflow-y: auto;
+}
+
+.fe-attribute-selector .category-section {
+    margin-bottom: 16px;
+}
+
+.fe-attribute-selector .fe-section-header-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.fe-attribute-selector .expansion-indicator {
+    width: 0;
+    height: 0;
+    border-left: 6px solid var(--teal-dark);
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.fe-attribute-selector .category-section.expanded .expansion-indicator {
+    transform: rotate(90deg);
+}
+
+.fe-attribute-selector .category-title {
+    font-weight: 600;
+    color: var(--text);
+}
+
+.fe-attribute-selector .attribute-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--teal-dark-75);
+}
+
+.fe-attribute-selector .attribute-container {
+    display: none;
+    padding: 8px 0 8px 24px;
+}
+
+.fe-attribute-selector .category-section.expanded .attribute-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* Disabled category styles */
+.fe-attribute-selector .category-section.disabled .category-title {
+    color: #999;
+}
+
+.fe-attribute-selector .category-section.disabled .attribute-count {
+    color: #999;
+    font-style: italic;
+}
