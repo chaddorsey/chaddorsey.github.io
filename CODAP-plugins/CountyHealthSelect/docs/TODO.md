@@ -1,6 +1,6 @@
 # County Health Select Plugin: Implementation TODO List
 
-## Current Status: Phase 1 - Basic Structure
+## Current Status: Phase 2 - State Management & Data Integration
 Last Updated: April 2, 2024
 
 ## Phase 1: Basic Structure and Layout
@@ -68,7 +68,7 @@ Last Updated: April 2, 2024
   - [x] Handle state synchronization between All and individual buttons
 
 ## Phase 2: State Management
-### Core State System [2/4]
+### Core State System [2/2]
 - [x] 2.1 Define state data structure
   - [x] Category expansion states
   - [x] Category toggle states
@@ -76,17 +76,8 @@ Last Updated: April 2, 2024
 - [x] 2.2 Implement state initialization
   - [x] Default category states
   - [x] Default attribute selections
-- [ ] 2.3 Create state update methods
-  - [x] Category toggle updates
-  - [x] Attribute selection updates
-  - [x] Expansion state updates
-  - [ ] State serialization methods
-- [ ] 2.4 Add persistence layer
-  - [ ] State serialization
-  - [ ] State deserialization
-  - [ ] State recovery
 
-### UI State Connection [3/4]
+### UI State Connection [3/3]
 - [x] 2.5 Connect checkbox interactions
   - [x] Bind checkbox events
   - [x] Update category states
@@ -99,136 +90,93 @@ Last Updated: April 2, 2024
   - [x] Bind expansion events
   - [x] Update container visibility
   - [x] Manage indicator rotation
-- [ ] 2.8 Implement selection counting
-  - [x] Track per-category counts
-  - [x] Update display text
-  - [ ] Handle counter updates when loading data
 
-## Phase 3: Interactive Features
-### Button Interactions [0/4]
-- [ ] 3.1 Implement click handlers
-  - [ ] Toggle selection state
-  - [ ] Update visual state
-  - [ ] Trigger state updates
-- [ ] 3.2 Add hover behaviors
-  - [ ] Define hover states
-  - [ ] Implement color transitions
-- [ ] 3.3 Create active states
-  - [ ] Define pressed appearance
-  - [ ] Add active state handlers
-- [ ] 3.4 Implement disabled states
-  - [ ] Define disabled appearance
-  - [ ] Add disabled state logic
-
-### Category Controls [0/4]
-- [ ] 3.5 Add expansion functionality
-  - [ ] Implement expand/collapse
-  - [ ] Animate indicators
-  - [ ] Handle container visibility
-- [ ] 3.6 Implement category toggles
-  - [ ] Add checkbox handlers
-  - [ ] Update category state
-  - [ ] Handle visual updates
-- [ ] 3.7 Create status updates
-  - [ ] Implement count tracking
-  - [ ] Update status text
-  - [ ] Handle zero states
-- [ ] 3.8 Add disabled handling
-  - [ ] Implement category disable
-  - [ ] Update visual states
-  - [ ] Handle child elements
-
-## Phase 4: Data Integration
+## Phase 3: Data Integration
 ### Data System Updates [0/4]
-- [ ] 4.1 Update CSV handling
-  - [ ] Add column filtering
-  - [ ] Maintain core attributes
-  - [ ] Handle missing data
-- [ ] 4.2 Implement attribute filtering
-  - [ ] Create filter logic
-  - [ ] Apply selection rules
-  - [ ] Handle edge cases
-- [ ] 4.3 Add multi-state handling
-  - [ ] Track per-state data
-  - [ ] Handle column consistency
-  - [ ] Manage data updates
-- [ ] 4.4 Update import process
-  - [ ] Modify data loading
-  - [ ] Apply filters
-  - [ ] Handle errors
+- [ ] 3.1 Connect attribute selection to data filtering
+  - [ ] Create public interface for retrieving selected attributes
+  - [ ] Implement attribute filtering logic
+  - [ ] Handle edge case of no selections
+- [ ] 3.2 Update CSV handling
+  - [ ] Add column filtering based on selections
+  - [ ] Maintain core attributes in all cases
+  - [ ] Implement filtering pipeline
+- [ ] 3.3 Update "Get Data" button logic
+  - [ ] Connect button state to attribute selection
+  - [ ] Handle disabled state when no attributes selected
+  - [ ] Add loading state during data retrieval
+- [ ] 3.4 Error handling and feedback
+  - [ ] Add error messaging for empty selections
+  - [ ] Implement error recovery options
+  - [ ] Create user feedback mechanisms
 
 ### CODAP Integration [0/4]
-- [ ] 4.5 Update interface
-  - [ ] Modify data structure
-  - [ ] Update column handling
-  - [ ] Handle state changes
-- [ ] 4.6 Implement column management
-  - [ ] Add new columns
-  - [ ] Handle removed columns
-  - [ ] Maintain data integrity
-- [ ] 4.7 Add button state management
-  - [ ] Track selection state
-  - [ ] Update button state
-  - [ ] Handle edge cases
-- [ ] 4.8 Implement error handling
-  - [ ] Validate selections
-  - [ ] Show error messages
-  - [ ] Handle recovery
+- [ ] 3.5 Update CODAP interface
+  - [ ] Modify data structure for selective attributes
+  - [ ] Handle dynamic column changes
+  - [ ] Ensure backwards compatibility
+- [ ] 3.6 Implement column management
+  - [ ] Filter columns based on selections
+  - [ ] Always include core geographic attributes
+  - [ ] Handle multi-state scenarios
+- [ ] 3.7 Add dataset metadata
+  - [ ] Track attribute selection with dataset
+  - [ ] Add metadata for source filtering
+  - [ ] Implement dataset annotations
+- [ ] 3.8 Test CODAP integration
+  - [ ] Verify data integrity
+  - [ ] Check column consistency
+  - [ ] Validate multi-state scenarios
 
-## Phase 5: Testing and Refinement
+## Phase 4: Testing and Refinement
 ### Testing [0/3]
-- [ ] 5.1 Unit tests
+- [ ] 4.1 Unit tests
   - [ ] State management tests
   - [ ] UI interaction tests
   - [ ] Data handling tests
-- [ ] 5.2 Integration tests
+- [ ] 4.2 Integration tests
   - [ ] Full workflow tests
   - [ ] CODAP integration tests
   - [ ] Error handling tests
-- [ ] 5.3 Visual regression tests
+- [ ] 4.3 Visual regression tests
   - [ ] UI component tests
   - [ ] State transition tests
   - [ ] Responsive layout tests
 
-### Optimization [0/3]
-- [ ] 5.4 Performance improvements
-  - [ ] Optimize state updates
+### Optimization [0/2]
+- [ ] 4.4 Performance improvements
+  - [ ] Optimize attribute filtering
   - [ ] Reduce DOM operations
   - [ ] Improve data handling
-- [ ] 5.5 Memory optimization
-  - [ ] Implement caching
-  - [ ] Reduce memory usage
-  - [ ] Clean up resources
-- [ ] 5.6 Code cleanup
+- [ ] 4.5 Code cleanup
   - [ ] Refactor duplicated code
   - [ ] Optimize algorithms
   - [ ] Update documentation
 
 ### Final Polish [0/3]
-- [ ] 5.7 Visual refinements
+- [ ] 4.6 Visual refinements
   - [ ] Fix styling issues
   - [ ] Improve transitions
   - [ ] Update colors/contrast
-- [ ] 5.8 Interaction improvements
+- [ ] 4.7 Interaction improvements
   - [ ] Smooth animations
   - [ ] Fix edge cases
   - [ ] Improve feedback
-- [ ] 5.9 Final validation
+- [ ] 4.8 Final validation
   - [ ] Cross-browser testing
   - [ ] Accessibility review
   - [ ] Performance validation
 
 ## Progress Tracking
 - Phase 1: [13/13] (Completed)
-- Phase 2: [5/8]
+- Phase 2: [5/5] (Completed)
 - Phase 3: [0/8]
 - Phase 4: [0/8]
-- Phase 5: [0/9]
 
-Total Progress: [18/46] tasks completed
+Total Progress: [18/34] tasks completed
 
 ## Next Steps
-1. Complete state update methods for serialization (Task 2.3)
-2. Implement state persistence layer (Task 2.4)
-3. Finalize selection counting functionality (Task 2.8)
-4. Begin implementing interactive features (Phase 3) 
+1. Create public interface for retrieving selected attributes (Task 3.1)
+2. Implement attribute filtering logic (Task 3.1)
+3. Update CSV handling for filtering (Task 3.2)
+4. Connect attribute selection to the "Get Data" button (Task 3.3) 
