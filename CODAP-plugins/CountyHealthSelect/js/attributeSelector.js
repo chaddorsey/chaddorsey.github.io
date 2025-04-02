@@ -62,16 +62,19 @@ const attributeSelectorState = {
     health: {
       expanded: false,
       enabled: true,
+      allSelected: true,
       attributes: new Set() // Will store selected attributes
     },
     environment: {
       expanded: false,
       enabled: true,
+      allSelected: true,
       attributes: new Set()
     },
     education: {
       expanded: false,
       enabled: true,
+      allSelected: true,
       attributes: new Set()
     }
   }
@@ -113,6 +116,7 @@ function initializeAttributeState() {
     attributes.forEach(attr => {
       attributeSelectorState.categories[categoryId].attributes.add(attr.id);
     });
+    attributeSelectorState.categories[categoryId].allSelected = true;
   }
 }
 
@@ -126,6 +130,24 @@ function generateAttributeButtons() {
     
     // Clear any existing buttons
     container.innerHTML = '';
+    
+    // Create "All" button first
+    const allButton = document.createElement('button');
+    allButton.classList.add('attribute-button', 'all-button');
+    allButton.setAttribute('data-attribute-id', 'all');
+    allButton.setAttribute('title', 'Select all attributes');
+    
+    // Check if "All" is selected in state
+    if (attributeSelectorState.categories[categoryId].allSelected) {
+      allButton.classList.add('selected');
+    }
+    
+    allButton.textContent = 'All';
+    
+    // Add click handler
+    allButton.addEventListener('click', handleAllButtonClick);
+    
+    container.appendChild(allButton);
     
     // Generate button for each attribute
     attributes.forEach(attr => {
@@ -150,6 +172,50 @@ function generateAttributeButtons() {
 }
 
 /**
+ * Handle click on the "All" button
+ * @param {Event} event - The click event
+ */
+function handleAllButtonClick(event) {
+  const button = event.target;
+  const categorySection = button.closest('.category-section');
+  const categoryId = categorySection.id.replace('-section', '');
+  const attributes = attributeDefinitions[categoryId];
+  
+  // Toggle "All" selection state
+  const isAllCurrentlySelected = button.classList.contains('selected');
+  
+  if (isAllCurrentlySelected) {
+    // If All is already selected, deselect it and all attribute buttons
+    button.classList.remove('selected');
+    attributeSelectorState.categories[categoryId].allSelected = false;
+    
+    // Clear all attribute selections
+    attributeSelectorState.categories[categoryId].attributes.clear();
+    
+    // Update attribute buttons
+    const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
+    attributeButtons.forEach(attrButton => {
+      attrButton.classList.remove('selected');
+    });
+  } else {
+    // If All is not selected, select it and all attribute buttons
+    button.classList.add('selected');
+    attributeSelectorState.categories[categoryId].allSelected = true;
+    
+    // Select all attributes
+    const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
+    attributeButtons.forEach((attrButton, index) => {
+      const attributeId = attributes[index].id;
+      attrButton.classList.add('selected');
+      attributeSelectorState.categories[categoryId].attributes.add(attributeId);
+    });
+  }
+  
+  // Update attribute count display
+  updateAttributeCount(categoryId);
+}
+
+/**
  * Handle click on attribute button
  * @param {Event} event - The click event
  */
@@ -158,15 +224,54 @@ function handleAttributeButtonClick(event) {
   const attributeId = button.getAttribute('data-attribute-id');
   const categorySection = button.closest('.category-section');
   const categoryId = categorySection.id.replace('-section', '');
+  const allButton = categorySection.querySelector('.attribute-button.all-button');
+  const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
   
-  // Toggle selected state
-  const isSelected = button.classList.toggle('selected');
+  // Check current state of the button and the All button
+  const isCurrentlySelected = button.classList.contains('selected');
+  const isAllCurrentlySelected = allButton.classList.contains('selected');
   
-  // Update state
-  if (isSelected) {
+  if (isAllCurrentlySelected) {
+    // If All is currently selected:
+    // 1. Deselect All button
+    // 2. Deselect all attribute buttons
+    // 3. Select only the clicked button
+    allButton.classList.remove('selected');
+    attributeSelectorState.categories[categoryId].allSelected = false;
+    
+    // Clear all existing selections
+    attributeSelectorState.categories[categoryId].attributes.clear();
+    
+    // Deselect all attribute buttons
+    attributeButtons.forEach(btn => {
+      btn.classList.remove('selected');
+    });
+    
+    // Select only the clicked button
+    button.classList.add('selected');
     attributeSelectorState.categories[categoryId].attributes.add(attributeId);
-  } else {
+  } else if (isCurrentlySelected) {
+    // If the button is already selected, just deselect it
+    button.classList.remove('selected');
     attributeSelectorState.categories[categoryId].attributes.delete(attributeId);
+  } else {
+    // If the button is not selected and All is not selected, 
+    // simply select this button (adding to existing selections)
+    button.classList.add('selected');
+    attributeSelectorState.categories[categoryId].attributes.add(attributeId);
+  }
+  
+  // Check if all attributes are now selected
+  const totalAttributes = attributeDefinitions[categoryId].length;
+  const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
+  
+  if (selectedCount === totalAttributes) {
+    // All attributes are selected, also select the "All" button
+    allButton.classList.add('selected');
+    attributeSelectorState.categories[categoryId].allSelected = true;
+  } else if (selectedCount === 0) {
+    // No attributes are selected, make sure the count shows 0
+    updateAttributeCount(categoryId);
   }
   
   // Update attribute count display
