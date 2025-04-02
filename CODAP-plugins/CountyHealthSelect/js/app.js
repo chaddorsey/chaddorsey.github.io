@@ -199,7 +199,7 @@ const DATASETS = [
       {
         type: 'instruction',
         text: "Select a state below to retrieve data from the County Health" +
-            " dataset. You may choose more than one state."
+            " dataset. You can add additional states or more data later."
       },
       {
         type: 'select',
