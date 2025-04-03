@@ -1,0 +1,23 @@
+name: Deploy branch to GitHub Pages
+
+on:
+  push:
+    branches:
+      - feature/attribute-selector-structure  # <-- Replace with your actual branch name
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout your branch
+        uses: actions/checkout@v4
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages            # Deploy to gh-pages branch
+          folder: .                   # Deploy root folder of your branch
+          target-folder: your-branch-name  # <-- URL subfolder (change as desired)
