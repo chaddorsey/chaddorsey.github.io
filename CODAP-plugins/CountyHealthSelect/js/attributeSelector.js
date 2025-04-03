@@ -17,6 +17,9 @@
 //  limitations under the License.
 // ==========================================================================
 
+// Import base URL helper if needed for asset loading
+import { getBaseURL } from './app.js';
+
 /**
  * Manages the attribute selector UI component
  */

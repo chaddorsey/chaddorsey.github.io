@@ -25,6 +25,19 @@ import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelecto
 const CURRENT_DATA_YEAR = '2025'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
 
+// Helper function to get base URL for assets
+function getBaseURL() {
+  // Get the current script's path
+  const scripts = document.getElementsByTagName('script');
+  const scriptPath = scripts[scripts.length - 1].src;
+  
+  // Extract base path from script URL (removes the js/script.js part)
+  const basePath = scriptPath.substring(0, scriptPath.lastIndexOf('/js/'));
+  
+  console.log('Base path for assets:', basePath);
+  return basePath;
+}
+
 // noinspection SqlResolve
 const DATASETS = [
   {
@@ -32,7 +45,7 @@ const DATASETS = [
     name: `County Health Indicators ${CURRENT_DATA_YEAR}, By State`,
     documentation: 'https://countyhealth.org',
     // endpoint: '/https://fatalencounters.now.sh/api',
-    endpoint: `./assets/data/${CURRENT_DATA_YEAR}/csv`,
+    endpoint: `assets/data/${CURRENT_DATA_YEAR}/csv`,
     selectedAttributeNames: [
       'State',
       'FIPS',
@@ -218,7 +231,8 @@ const DATASETS = [
     ],
     makeURL: function () {
       let stateCode = document.querySelector(`#CountyHealthByState [name=State]`).value;
-      return `${this.endpoint}/${CURRENT_DATA_YEAR}-CountyHealth-${stateCode}.csv`;
+      const basePath = getBaseURL();
+      return `${basePath}/${this.endpoint}/${CURRENT_DATA_YEAR}-CountyHealth-${stateCode}.csv`;
     },
     parentAttributes: ['State', 'population'],
     parentCollectionName: 'States',
@@ -1108,5 +1122,6 @@ export {
   initializeApp,
   hasSelectedAttributes,
   updateFetchButtonState,
-  getCurrentDatasetSpec
+  getCurrentDatasetSpec,
+  getBaseURL
 };
