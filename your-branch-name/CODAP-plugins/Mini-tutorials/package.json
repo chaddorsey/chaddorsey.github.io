@@ -1,0 +1,14 @@
+{
+  "name": "root",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "onboarding-new-1",
+    "onboarding-new-2",
+    "onboarding-new-3",
+    "onboarding-new-4"
+  ],
+  "devDependencies": {
+    "lerna": "^6.4.1"
+  }
+}

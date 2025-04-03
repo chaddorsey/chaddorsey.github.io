@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="description"
+        content="A CODAP plugin to retrieve county health ranking data for United States counties">
+  <title>County Health Rankings</title>
+  <script src="lib/iframe-phone.js"></script>
+  <script src="lib/CodapInterface.js"></script>
+  <script src="lib/papaparse.min.js"></script>
+  <link rel="stylesheet" href="css/style.css" >
+</head>
+<body>
+<main>
+  <section id="fe-intro-section" class="fe-pop-up">
+    <div class="fe-section-header-line">
+      <span>Retrieve data about county health rankings in the US.</span>
+      <span class="fe-info-button fe-pop-up-anchor icon-info" title="Get further information about this CODAP plugin"></span>
+    </div>
+    <div class="fe-cover"></div>
+    <div class="fe-pop-up-container">
+      <div class="fe-pop-up-content">
+        <div class="fe-pop-up-header">
+          Information about the plug-in
+        </div>
+        <div class="fe-pop-up-body">
+          <p>
+            The data from this plug-in was downloaded from the publicly
+            accessible dataset collected by
+            <a href="https://www.countyhealthrankings.org/" target="_blank">County Health Rankings & Roadmaps</a>,
+            provides data, evidence, guidance, and examples to build awareness of the multiple factors that influence 
+            health and support leaders in growing community power to improve health equity. 
+            The Rankings are unique in their ability to measure the health of nearly every county in all 50 states, 
+            and are complemented by guidance, tools, and resources designed to accelerate community learning and action. 
+            To see the most up-to-date dataset,
+            <a href="https://www.countyhealthrankings.org/explore-health-rankings" target="_blank">click here</a>.
+          </p>
+
+          <p>
+            This plug-in was developed in Fall 2023 by
+            <a href="https://concord.org" target="_blank">The Concord Consortium</a>
+            as part of the
+            <a href="https://codap.concord.org" target="_blank">CODAP project</a>.
+            This plug-in was part of the NetApp Data Explorers project, funded by the NetApp corporation.
+            Data curation from the full dataset was conducted by Andee Rubin, Traci Higgins, Natalya St. Clair,
+            and Chad Dorsey. Additional data processing was assisted by ChatGPT 4.
+          </p>
+        </div>
+        <div id="fe-info-close-section" class="fe-pop-up-footer">
+          <div class="fe-control-row">
+            <span><button id="fe-info-close-button" class="fe-button" title="Hide this section.">Close</button></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <hr class="fe-fixed-section-divider"/>
+  <section class="contents"></section>
+
+  <hr class="wx-fixed-section-divider"/>
+
+  <!-- Attribute Selector Section -->
+  <section id="attribute-selector-container" class="fe-attribute-selector">
+    <!-- Health Category -->
+    <div class="category-section" id="health-section">
+      <div class="fe-section-header-line">
+        <span class="expansion-indicator" aria-label="Expand Health category"></span>
+        <input type="checkbox" id="health-toggle" checked aria-label="Toggle Health category">
+        <span class="category-title">Health</span>
+        <span class="attribute-count"><i>13 of 13 attributes selected</i></span>
+      </div>
+      <div class="attribute-container" id="health-attributes" aria-label="Health attributes">
+        <!-- Buttons will be added here dynamically -->
+      </div>
+    </div>
+
+    <!-- Environment Category -->
+    <div class="category-section" id="environment-section">
+      <div class="fe-section-header-line">
+        <span class="expansion-indicator" aria-label="Expand Environment category"></span>
+        <input type="checkbox" id="environment-toggle" checked aria-label="Toggle Environment category">
+        <span class="category-title">Environment</span>
+        <span class="attribute-count"><i>7 of 7 attributes selected</i></span>
+      </div>
+      <div class="attribute-container" id="environment-attributes" aria-label="Environment attributes">
+        <!-- Buttons will be added here dynamically -->
+      </div>
+    </div>
+
+    <!-- Education Category -->
+    <div class="category-section" id="education-section">
+      <div class="fe-section-header-line">
+        <span class="expansion-indicator" aria-label="Expand Education category"></span>
+        <input type="checkbox" id="education-toggle" checked aria-label="Toggle Education category">
+        <span class="category-title">Education</span>
+        <span class="attribute-count"><i>5 of 5 attributes selected</i></span>
+      </div>
+      <div class="attribute-container" id="education-attributes" aria-label="Education attributes">
+        <!-- Buttons will be added here dynamically -->
+      </div>
+    </div>
+  </section>
+
+  <hr class="wx-fixed-section-divider"/>
+
+  <div id="fe-summary-section">
+    <div class="fe-section-header-line fe-summary">
+      <span class="fe-status-graphic"></span>
+      <span class="fe-message-area"></span>
+      <span class="fe-control-area">
+        <div class="fe-control-row">
+          <button class="fe-clear-button fe-button" title="Clear Dataset in CODAP">Clear Data</button>
+          <button class="fe-fetch-button fe-button" title="Get data and send to CODAP">Get Data</button>
+        </div>
+      </span>
+    </div>
+  </div>
+
+  <p>
+
+  </p>
+</main>
+<script src="js/index.js" type="module"></script>
+</body>
+</html>
