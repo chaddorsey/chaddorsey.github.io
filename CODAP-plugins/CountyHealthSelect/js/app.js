@@ -22,16 +22,17 @@ import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
 import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
 
-const APP_NAME = 'County Health Datasets';
+const CURRENT_DATA_YEAR = '2025'; // Define current data year
+const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
 
 // noinspection SqlResolve
 const DATASETS = [
   {
     id: 'CountyHealthByState',
-    name: 'County Health Indicators, By State',
+    name: `County Health Indicators ${CURRENT_DATA_YEAR}, By State`,
     documentation: 'https://countyhealth.org',
     // endpoint: '/https://fatalencounters.now.sh/api',
-    endpoint: './assets/data',
+    endpoint: `./assets/data/${CURRENT_DATA_YEAR}/csv`,
     selectedAttributeNames: [
       'State',
       'FIPS',
@@ -198,7 +199,7 @@ const DATASETS = [
     uiComponents: [
       {
         type: 'instruction',
-        text: "Select a state below to retrieve data from the County Health" +
+        text: `Select a state below to retrieve data from the ${CURRENT_DATA_YEAR} County Health` +
             " dataset. You can add additional states or more data later."
       },
       {
@@ -217,7 +218,7 @@ const DATASETS = [
     ],
     makeURL: function () {
       let stateCode = document.querySelector(`#CountyHealthByState [name=State]`).value;
-      return `${this.endpoint}/CountyHealth-${stateCode}.csv`;
+      return `${this.endpoint}/${CURRENT_DATA_YEAR}-CountyHealth-${stateCode}.csv`;
     },
     parentAttributes: ['State', 'population'],
     parentCollectionName: 'States',
