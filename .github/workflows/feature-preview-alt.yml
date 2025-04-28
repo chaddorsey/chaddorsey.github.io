@@ -1,0 +1,75 @@
+# Alternative Deploy Feature Branch Preview with simpler approach
+name: Deploy Feature Branch Preview (Alternative)
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+  workflow_dispatch:
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Explicitly set write permissions
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
+      
+      - name: Extract feature name
+        id: extract
+        run: echo "FEATURE_NAME=${GITHUB_REF#refs/heads/feature/}" >> $GITHUB_ENV
+
+      - name: Create temporary directory for deployment
+        run: |
+          mkdir -p /tmp/deploy-${{ env.FEATURE_NAME }}
+          
+          # Copy all files except node_modules and problematic directories
+          rsync -av --exclude 'node_modules' --exclude '.git' --exclude '.github' --exclude 'attribute-selector-structure' ./ /tmp/deploy-${{ env.FEATURE_NAME }}/
+          
+          echo "Files prepared for deployment:"
+          ls -la /tmp/deploy-${{ env.FEATURE_NAME }}/
+
+      - name: Deploy to gh-pages branch
+        run: |
+          # Checkout gh-pages branch to a different directory
+          git fetch origin gh-pages || true
+          mkdir -p /tmp/gh-pages
+          
+          if git show-ref --verify --quiet refs/remotes/origin/gh-pages; then
+            git worktree add --detach /tmp/gh-pages origin/gh-pages
+            cd /tmp/gh-pages
+            # Create or reset the branch
+            git checkout -B gh-pages
+          else
+            # Create a new orphan branch if gh-pages doesn't exist
+            cd /tmp/gh-pages
+            git init
+            git checkout -b gh-pages
+          fi
+          
+          # Create the target folder
+          mkdir -p ${{ env.FEATURE_NAME }}
+          
+          # Copy the deployment files
+          rsync -av --delete /tmp/deploy-${{ env.FEATURE_NAME }}/ ${{ env.FEATURE_NAME }}/
+          
+          # Commit and push
+          git add .
+          
+          # Only commit if there are changes
+          if git status --porcelain | grep .; then
+            git commit -m "Deploy ${{ env.FEATURE_NAME }} branch to GitHub Pages"
+            git push -f https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} gh-pages
+            echo "Deployment successful! 🚀"
+          else
+            echo "No changes to commit."
+          fi 

@@ -97,4 +97,4 @@ jobs:
           single-commit: true  # Use a single commit - this is better for large repositories
           git-config-name: GitHub Actions
           git-config-email: actions@github.com
-          commit-message: "Deploy branch ${{ env.FEATURE_NAME }} to GitHub Pages" 
+          commit-message: "Deploy branch ${{ env.FEATURE_NAME }} to GitHub Pages"
