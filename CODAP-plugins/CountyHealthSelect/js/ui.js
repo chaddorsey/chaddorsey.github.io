@@ -215,27 +215,10 @@ function createUIControl(def) {
     case 'select':
       el = createSelectControl(def);
       break;
-      // case 'conditionalSelect':
-      //   el = createConditionalSelectControl(def);
-      //   break;
     default:
       console.warn(`createUIControl: unknown type: ${def.type}`);
   }
   return el;
-}
-
-/**
- * UI generation: from declarative specs.
- *
- * @param parentEl
- * @param datasetDef
- */
-function createDatasetUI(parentEl, datasetDef) {
-  let el = createElement('div');
-  datasetDef.uiComponents.forEach(uic => {
-    el.append(createUIControl(uic));
-  });
-  parentEl.append(el);
 }
 
 /**
@@ -258,9 +241,9 @@ function createDatasetSelector(id, name, ix) {
 function getCheckboxValue(selector) {
   return !!document.querySelector(`${selector}:checked`)
 }
+
 export {
   createAttribute,
-  createDatasetUI,
   createDatasetSelector,
   createElement,
   createInstruction,
@@ -270,6 +253,5 @@ export {
   setBusyIndicator,
   setMessage,
   setTransferStatus,
-  // setWaitCursor,
   getCheckboxValue,
 };

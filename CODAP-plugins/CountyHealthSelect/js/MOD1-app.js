@@ -29,8 +29,7 @@ const DATASETS = [
     id: 'CountyHealthByState',
     name: 'County Health Indicators, By State',
     documentation: 'https://countyhealth.org',
-    // endpoint: '/https://fatalencounters.now.sh/api',
-    endpoint: './assets/data',
+    endpoint: '/assets/data/2023/csv',
     selectedAttributeNames: [
       'State',
       'population',
@@ -91,7 +90,7 @@ const DATASETS = [
       },
       {
           name: 'Days of Poor Physical Health',
-          description: 'Adults were asked the following question: “Thinking about your physical health&comma; which includes physical illness and injury&comma; for how many days during the past 30 days was your physical health not good?” The value represents the average number of days reported.',
+          description: 'Adults were asked the following question: "Thinking about your physical health&comma; which includes physical illness and injury&comma; for how many days during the past 30 days was your physical health not good?" The value represents the average number of days reported.',
       },
       {
           name: 'Days of Poor Mental Health',
@@ -239,8 +238,13 @@ const DATASETS = [
       }
     ],
     makeURL: function () {
-      let stateCode = document.querySelector(`#CountyHealthByState [name=State]`).value;
-      return `${this.endpoint}/CountyHealth-${stateCode}.csv`;
+      try {
+        let stateCode = document.querySelector('#CountyHealthByState [name=State]').value;
+        const url = `/assets/data/2023/csv/2023-CountyHealth-${stateCode}.csv`;
+        return url;
+      } catch (error) {
+        return null;
+      }
     },
     parentAttributes: ['State', 'population'],
     parentCollectionName: 'States',

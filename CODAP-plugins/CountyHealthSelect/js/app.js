@@ -42,10 +42,9 @@ function getBaseURL() {
 const DATASETS = [
   {
     id: 'CountyHealthByState',
-    name: `County Health Indicators ${CURRENT_DATA_YEAR}, By State`,
+    name: `County Health Indicators 2023, By State`,
     documentation: 'https://countyhealth.org',
-    // endpoint: '/https://fatalencounters.now.sh/api',
-    endpoint: `assets/data/${CURRENT_DATA_YEAR}/csv`,
+    endpoint: `assets/data/2023/csv`,
     selectedAttributeNames: [
       'State',
       'FIPS',
@@ -231,10 +230,9 @@ const DATASETS = [
     ],
     makeURL: function () {
       try {
-        let stateCode = document.querySelector(`#CountyHealthByState [name=State]`).value;
+        let stateCode = document.querySelector('#state-select').value;
         const basePath = getBaseURL();
-        const url = `${basePath}/${this.endpoint}/${CURRENT_DATA_YEAR}-CountyHealth-${stateCode}.csv`;
-        console.log('Generated URL:', url);
+        const url = `${basePath}/assets/data/2023/csv/2023-CountyHealth-${stateCode}.csv`;
         return url;
       } catch (error) {
         console.error('Error creating URL:', error);
@@ -247,7 +245,7 @@ const DATASETS = [
     preprocess: [
       {type: 'mergePopulation', dataKey: 'State', mergeKey: 'USPS Code'},
     ],
-    preclear: {key: 'State', selector: '#CountyHealthByState [name=State]'}
+    preclear: {key: 'State', selector: '#state-select'}
   }
 ]
 
@@ -791,20 +789,24 @@ async function selectComponent(componentID) {
  * Update the fetch button state based on attribute selections
  */
 function updateFetchButtonState() {
-  const getDataButton = document.querySelector('.fe-fetch-button');
   const hasAttributes = hasSelectedAttributes();
-  
-  console.log('Updating fetch button state, hasAttributes:', hasAttributes);
-  
-  // Enable/disable the button based on whether there are any selected attributes
-  if (hasAttributes) {
+  const stateSelect = document.querySelector('#state-select');
+  const hasState = stateSelect && stateSelect.value;
+  const getDataButton = document.querySelector('.fe-fetch-button');
+
+  if (!getDataButton) {
+    console.error('Get Data button not found');
+    return;
+  }
+
+  if (hasAttributes && hasState) {
     getDataButton.removeAttribute('disabled');
     getDataButton.title = 'Get data and send to CODAP';
     getDataButton.style.opacity = '1';
     getDataButton.style.cursor = 'pointer';
   } else {
     getDataButton.setAttribute('disabled', 'disabled');
-    getDataButton.title = 'Select at least one attribute first';
+    getDataButton.title = hasState ? 'Select at least one attribute first' : 'Select a state first';
     getDataButton.style.opacity = '0.5';
     getDataButton.style.cursor = 'not-allowed';
   }
@@ -873,36 +875,17 @@ function initializeApp() {
 function createUI() {
   console.log('Creating UI');
   
-  // Create the dataset UI from our dataset definitions
-  let anchor = document.querySelector('.contents');
-  if (!anchor) {
-    console.error('Contents anchor not found');
-    return;
+  // Set up event listener for state selection
+  const stateSelect = document.querySelector('#state-select');
+  if (stateSelect) {
+    stateSelect.addEventListener('change', function() {
+      console.log('State selection changed to:', this.value);
+      updateFetchButtonState();
+    });
+  } else {
+    console.error('State select element not found');
   }
-  
-  // Clear existing content
-  anchor.innerHTML = '';
-  
-  // Create UI for the displayed datasets (we'll only have one)
-  displayedDatasets.forEach(function (dsId) {
-    let ix = DATASETS.findIndex(function (d) { return d.id === dsId });
-    if (ix >= 0) {
-      let ds = DATASETS[ix];
-      let el = ui.createDatasetSelector(ds.id, ds.name, ix);
 
-      if (ds.uiCreate) {
-        ds.uiCreate(el);
-      } else {
-        // Make sure we create the UI components including the state dropdown
-        ui.createDatasetUI(el, ds);
-      }
-      anchor.append(el);
-      
-      // Make the dataset visible by adding the selected-source class
-      el.classList.add('selected-source');
-    }
-  });
-  
   // Set up event listeners for get data button
   let getDataButton = document.querySelector('.fe-fetch-button');
   if (getDataButton) {

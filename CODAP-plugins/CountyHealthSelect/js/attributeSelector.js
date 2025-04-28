@@ -393,11 +393,13 @@ function getSelectedAttributes() {
   for (const categoryId in attributeDefinitions) {
     // Skip disabled categories
     if (!attributeSelectorState.categories[categoryId].enabled) {
+      console.log(`Category ${categoryId} is disabled, skipping`);
       continue;
     }
     
     // Get attributes for this category
     const categoryAttributes = getSelectedAttributesForCategory(categoryId);
+    console.log(`Category ${categoryId}: selected ${categoryAttributes.length} attributes`);
     selectedAttributes.push(...categoryAttributes);
   }
   
@@ -411,7 +413,9 @@ function getSelectedAttributes() {
   ];
   
   // Combine core and selected attributes (avoiding duplicates)
-  return [...new Set([...coreAttributes, ...selectedAttributes])];
+  const finalAttributes = [...new Set([...coreAttributes, ...selectedAttributes])];
+  console.log(`Total selected attributes: ${finalAttributes.length} (${selectedAttributes.length} category attributes + ${coreAttributes.length} core attributes)`);
+  return finalAttributes;
 }
 
 /**
@@ -425,14 +429,29 @@ function getSelectedAttributesForCategory(categoryId) {
     return [];
   }
   
+  // If "All" is selected for this category, return all attribute names
+  if (attributeSelectorState.categories[categoryId].allSelected) {
+    return attributeDefinitions[categoryId].map(attr => attr.name);
+  }
+  
+  // Otherwise, map the selected IDs to names
   const selectedAttributeIds = Array.from(attributeSelectorState.categories[categoryId].attributes);
   const attributes = attributeDefinitions[categoryId];
   
+  console.log(`Category ${categoryId}: has ${selectedAttributeIds.length} IDs selected out of ${attributes.length} total`);
+  
   // Map IDs to actual attribute names
-  return selectedAttributeIds.map(id => {
+  const result = selectedAttributeIds.map(id => {
     const attribute = attributes.find(attr => attr.id === id);
-    return attribute ? attribute.name : null;
+    if (!attribute) {
+      console.warn(`Warning: No attribute found with ID "${id}" in category "${categoryId}"`);
+      return null;
+    }
+    return attribute.name;
   }).filter(name => name !== null);
+  
+  console.log(`Category ${categoryId}: mapped ${result.length} names from ${selectedAttributeIds.length} IDs`);
+  return result;
 }
 
 /**
