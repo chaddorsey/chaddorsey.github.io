@@ -15,6 +15,11 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name 'GitHub Actions'
+          git config --global user.email 'actions@github.com'
           
       # No build step needed since this is a simple JavaScript project with no build process
       # If you add a build process later, insert build steps here
@@ -22,6 +27,21 @@ jobs:
       - name: Extract feature name
         id: extract
         run: echo "FEATURE_NAME=${GITHUB_REF#refs/heads/feature/}" >> $GITHUB_ENV
+
+      - name: Debug Info
+        run: |
+          echo "Repository: $GITHUB_REPOSITORY"
+          echo "Branch: $GITHUB_REF"
+          echo "Feature name: $FEATURE_NAME"
+          echo "Workspace: $GITHUB_WORKSPACE"
+          du -sh .
+          ls -la
+
+      - name: Remove large files (if any)
+        run: |
+          # Example: Remove large data files that might cause issues
+          find . -type f -size +50M -exec ls -lh {} \; || true
+          find . -type f -name "*.zip" -size +50M -exec rm -f {} \; || true
 
       - name: Deploy to gh-pages subfolder
         uses: peaceiris/actions-gh-pages@v3
@@ -31,4 +51,5 @@ jobs:
           publish_dir: ./
           destination_dir: ${{ env.FEATURE_NAME }}
           keep_files: true
-          publish_branch: gh-pages 
+          publish_branch: gh-pages
+          force_orphan: false 
