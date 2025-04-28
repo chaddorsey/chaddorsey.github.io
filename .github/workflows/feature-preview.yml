@@ -68,6 +68,19 @@ jobs:
           # Also check for any nested instances that could cause path length issues
           find . -type d -path "*attribute-selector-structure*attribute-selector-structure*" -exec rm -rf {} \; 2>/dev/null || true
 
+      - name: Debug Git Info
+        run: |
+          echo "Git version:"
+          git --version
+          echo "Git config:"
+          git config --list
+          echo "Git status:"
+          git status
+          echo "Checking disk space:"
+          df -h
+          echo "Checking memory:"
+          free -h || true
+
       - name: Deploy to gh-pages subfolder
         uses: JamesIves/github-pages-deploy-action@v4
         with:
@@ -80,7 +93,8 @@ jobs:
           clean: false
           clean-exclude: |
             attribute-selector-structure/**
-          silent: true  # Run in silent mode
+          silent: false  # Disable silent mode to see more debug info
           single-commit: true  # Use a single commit - this is better for large repositories
           git-config-name: GitHub Actions
-          git-config-email: actions@github.com 
+          git-config-email: actions@github.com
+          commit-message: "Deploy branch ${{ env.FEATURE_NAME }} to GitHub Pages" 
