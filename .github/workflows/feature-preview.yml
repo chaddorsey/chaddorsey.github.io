@@ -1,0 +1,34 @@
+# Deploy Feature Branch Preview
+name: Deploy Feature Branch Preview
+
+on:
+  push:
+    branches:
+      - 'feature/*'
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          
+      # No build step needed since this is a simple JavaScript project with no build process
+      # If you add a build process later, insert build steps here
+      
+      - name: Extract feature name
+        id: extract
+        run: echo "FEATURE_NAME=${GITHUB_REF#refs/heads/feature/}" >> $GITHUB_ENV
+
+      - name: Deploy to gh-pages subfolder
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Deploy the whole repository content since there's no build directory
+          publish_dir: ./
+          destination_dir: ${{ env.FEATURE_NAME }}
+          keep_files: true
+          publish_branch: gh-pages 
