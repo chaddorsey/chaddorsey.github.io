@@ -817,6 +817,97 @@ Would you like to make any changes to this workflow?
 
 ---
 
+_**User**_
+
+What should I do with these errors? 
+
+---
+
+_**Assistant**_
+
+You're encountering a GitHub file size limit error. GitHub has a maximum file size limit of 100MB per file, but your repository contains a file that's 183.67MB:
+
+```
+File CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip is 183.67 MB; this exceeds GitHub's file size limit of 100.00 MB
+```
+
+Here are your options to resolve this issue:
+
+### Option 1: Use Git Large File Storage (LFS)
+
+GitHub recommends using Git LFS for large files. This is the best approach if you need to keep this large file in your repository:
+
+1. **Install Git LFS**:
+   ```bash
+   brew install git-lfs  # On macOS with Homebrew
+   ```
+
+2. **Set up Git LFS in your repository**:
+   ```bash
+   git lfs install
+   ```
+
+3. **Track the large file**:
+   ```bash
+   git lfs track "CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip"
+   ```
+
+4. **Add the .gitattributes file that was created**:
+   ```bash
+   git add .gitattributes
+   ```
+
+5. **Re-add the large file and commit**:
+   ```bash
+   git add CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip
+   git commit -m "Add large file using Git LFS"
+   ```
+
+6. **Push again**:
+   ```bash
+   git push origin feature/attribute-selector-structure
+   ```
+
+### Option 2: Remove the large file from your repository
+
+If the data file doesn't need to be in the repository:
+
+1. **Remove the file from your commit**:
+   ```bash
+   git rm --cached CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip
+   git commit -m "Remove large data file"
+   ```
+
+2. **Add the file to .gitignore**:
+   ```bash
+   echo "CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip" >> .gitignore
+   git add .gitignore
+   git commit -m "Add large data file to gitignore"
+   ```
+
+3. **Push again**:
+   ```bash
+   git push origin feature/attribute-selector-structure
+   ```
+
+### Option 3: Host the data file externally
+
+You could host the data file on an external service and reference it in your code:
+
+1. Host on cloud storage (AWS S3, Google Cloud Storage, etc.)
+2. Update your code to point to the external URL
+3. Remove the file from your repository using the steps in Option 2
+
+### Which option is best?
+
+If this is a data file your application needs:
+- Option 1 (Git LFS) is best if you need version control for the file
+- Option 3 (External hosting) is best if the file rarely changes and doesn't need versioning
+
+Would you like me to help you implement one of these solutions?
+
+---
+
 
 
 ---
