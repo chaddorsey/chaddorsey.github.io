@@ -9,6 +9,15 @@ CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip
 ..bfg-report
 bfg.jar
 
-# Node modules
-**/node_modules/
+# Node modules - ensure all node_modules directories are excluded
 node_modules/
+**/node_modules/
+**/*/node_modules/
+**/*/*/node_modules/
+**/*/*/*/node_modules/
+**/*/*/*/*/node_modules/
+**/*/*/*/*/*/node_modules/
+**/*/*/*/*/*/*/node_modules/
+
+# Also exclude any paths that are too long or problematic
+**/attribute-selector-structure/
