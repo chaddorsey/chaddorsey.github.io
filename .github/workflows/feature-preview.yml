@@ -42,6 +42,31 @@ jobs:
           # Example: Remove large data files that might cause issues
           find . -type f -size +50M -exec ls -lh {} \; || true
           find . -type f -name "*.zip" -size +50M -exec rm -f {} \; || true
+          
+      - name: Prepare for deployment
+        run: |
+          # Create a .gitignore file to exclude node_modules and other large files during deployment
+          cat << EOF > .gitignore.deploy
+          node_modules/
+          **/node_modules/
+          CODAP-plugins/Mini-tutorials/node_modules/
+          **/attribute-selector-structure/
+          **/.git
+          **/.github
+          EOF
+          
+          # Remove any existing node_modules directories that might still be tracked
+          find . -type d -name "node_modules" -exec rm -rf {} \; 2>/dev/null || true
+          
+      - name: Prevent recursive path issues
+        run: |
+          # Remove attribute-selector-structure from the deployment to prevent recursive path issues
+          if [ -d "attribute-selector-structure" ]; then
+            echo "Found attribute-selector-structure directory, removing it from deployment"
+            rm -rf attribute-selector-structure
+          fi
+          # Also check for any nested instances that could cause path length issues
+          find . -type d -path "*attribute-selector-structure*attribute-selector-structure*" -exec rm -rf {} \; 2>/dev/null || true
 
       - name: Deploy to gh-pages subfolder
         uses: JamesIves/github-pages-deploy-action@v4
@@ -52,4 +77,10 @@ jobs:
           folder: ./
           branch: gh-pages
           target-folder: ${{ env.FEATURE_NAME }}
-          clean: false 
+          clean: false
+          clean-exclude: |
+            attribute-selector-structure/**
+          silent: true  # Run in silent mode
+          single-commit: true  # Use a single commit - this is better for large repositories
+          git-config-name: GitHub Actions
+          git-config-email: actions@github.com 
