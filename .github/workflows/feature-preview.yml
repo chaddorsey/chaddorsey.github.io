@@ -1,100 +1,171 @@
-# Deploy Feature Branch Preview
-name: Deploy Feature Branch Preview
+# Deploy Feature Branch Preview to main branch previews subfolder
+name: Deploy Feature Branch Preview to Main Branch
 
 on:
   push:
     branches:
       - 'feature/*'
+  workflow_dispatch:
 
 jobs:
   deploy-preview:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Explicitly set write permissions
 
     steps:
-      - name: Checkout code
+      - name: Checkout main branch
         uses: actions/checkout@v3
         with:
+          ref: main
           fetch-depth: 0
 
       - name: Setup Git
         run: |
           git config --global user.name 'GitHub Actions'
           git config --global user.email 'actions@github.com'
-          
-      # No build step needed since this is a simple JavaScript project with no build process
-      # If you add a build process later, insert build steps here
       
       - name: Extract feature name
         id: extract
         run: echo "FEATURE_NAME=${GITHUB_REF#refs/heads/feature/}" >> $GITHUB_ENV
 
-      - name: Debug Info
-        run: |
-          echo "Repository: $GITHUB_REPOSITORY"
-          echo "Branch: $GITHUB_REF"
-          echo "Feature name: $FEATURE_NAME"
-          echo "Workspace: $GITHUB_WORKSPACE"
-          du -sh .
-          ls -la
+      - name: Create previews directory if it doesn't exist
+        run: mkdir -p previews
 
-      - name: Remove large files (if any)
+      - name: Checkout feature branch to temporary location
         run: |
-          # Example: Remove large data files that might cause issues
-          find . -type f -size +50M -exec ls -lh {} \; || true
-          find . -type f -name "*.zip" -size +50M -exec rm -f {} \; || true
+          # Create a temp directory for the feature branch content
+          mkdir -p /tmp/feature-content
           
-      - name: Prepare for deployment
+          # Checkout the feature branch that triggered this workflow
+          git worktree add --detach /tmp/feature-content ${{ github.sha }}
+          
+          echo "Feature branch content:"
+          ls -la /tmp/feature-content/
+
+      - name: Prepare feature branch content for deployment
         run: |
-          # Create a .gitignore file to exclude node_modules and other large files during deployment
-          cat << EOF > .gitignore.deploy
-          node_modules/
-          **/node_modules/
-          CODAP-plugins/Mini-tutorials/node_modules/
-          **/attribute-selector-structure/
-          **/.git
-          **/.github
+          # Create or clean the target directory
+          mkdir -p previews/${{ env.FEATURE_NAME }}
+          rm -rf previews/${{ env.FEATURE_NAME }}/*
+          
+          # Copy content from feature branch, excluding problematic directories
+          rsync -av --exclude 'node_modules' --exclude '.git' --exclude '.github' \
+                --exclude 'attribute-selector-structure' \
+                /tmp/feature-content/ previews/${{ env.FEATURE_NAME }}/
+          
+          # Create a notice file indicating this is a preview
+          cat > previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md << EOF
+          # Preview Environment
+          
+          This is a preview of the \`${{ env.FEATURE_NAME }}\` feature branch.
+          
+          Last updated: $(date)
+          
+          Commit: ${{ github.sha }}
           EOF
           
-          # Remove any existing node_modules directories that might still be tracked
-          find . -type d -name "node_modules" -exec rm -rf {} \; 2>/dev/null || true
-          
-      - name: Prevent recursive path issues
-        run: |
-          # Remove attribute-selector-structure from the deployment to prevent recursive path issues
-          if [ -d "attribute-selector-structure" ]; then
-            echo "Found attribute-selector-structure directory, removing it from deployment"
-            rm -rf attribute-selector-structure
+          # Create an index.html if none exists (optional, remove if not needed)
+          if [ ! -f previews/${{ env.FEATURE_NAME }}/index.html ]; then
+            cat > previews/${{ env.FEATURE_NAME }}/index.html << EOF
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>${{ env.FEATURE_NAME }} Preview</title>
+              <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
+                h1 { color: #333; }
+                .notice { background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-bottom: 20px; }
+                a { color: #007bff; text-decoration: none; }
+                a:hover { text-decoration: underline; }
+              </style>
+            </head>
+            <body>
+              <h1>${{ env.FEATURE_NAME }} Preview</h1>
+              <div class="notice">
+                <p>This is a preview deployment of the <strong>${{ env.FEATURE_NAME }}</strong> feature branch.</p>
+                <p>Commit: <code>${{ github.sha }}</code></p>
+                <p>Last updated: <code>$(date)</code></p>
+              </div>
+              <h2>Available Resources</h2>
+              <ul>
+                <li><a href="CODAP-plugins/">CODAP Plugins</a></li>
+              </ul>
+            </body>
+            </html>
+            EOF
           fi
-          # Also check for any nested instances that could cause path length issues
-          find . -type d -path "*attribute-selector-structure*attribute-selector-structure*" -exec rm -rf {} \; 2>/dev/null || true
+          
+          echo "Preview content prepared at previews/${{ env.FEATURE_NAME }}:"
+          ls -la previews/${{ env.FEATURE_NAME }}/
 
-      - name: Debug Git Info
+      - name: Commit and push changes to main
         run: |
-          echo "Git version:"
-          git --version
-          echo "Git config:"
-          git config --list
-          echo "Git status:"
-          git status
-          echo "Checking disk space:"
-          df -h
-          echo "Checking memory:"
-          free -h || true
+          # Add the changes
+          git add previews/${{ env.FEATURE_NAME }}
+          
+          # Only commit if there are changes
+          if git status --porcelain | grep .; then
+            # Create commit
+            git commit -m "Deploy preview for ${{ env.FEATURE_NAME }} feature branch"
+            
+            # Push to main branch
+            git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main
+            
+            echo "✅ Successfully deployed preview to: https://chaddorsey.github.io/previews/${{ env.FEATURE_NAME }}/"
+          else
+            echo "No changes to commit."
+          fi
 
-      - name: Deploy to gh-pages subfolder
-        uses: JamesIves/github-pages-deploy-action@v4
-        with:
-          # Use a PAT with write access instead of GITHUB_TOKEN
-          # Add this secret in your repository settings
-          token: ${{ secrets.GITHUB_TOKEN }}
-          folder: ./
-          branch: gh-pages
-          target-folder: ${{ env.FEATURE_NAME }}
-          clean: false
-          clean-exclude: |
-            attribute-selector-structure/**
-          silent: false  # Disable silent mode to see more debug info
-          single-commit: true  # Use a single commit - this is better for large repositories
-          git-config-name: GitHub Actions
-          git-config-email: actions@github.com
-          commit-message: "Deploy branch ${{ env.FEATURE_NAME }} to GitHub Pages"
+      - name: Create index for all previews
+        run: |
+          # Create an index of all available previews
+          mkdir -p previews
+          
+          # Generate the HTML content
+          cat > previews/index.html << EOF
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Feature Branch Previews</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
+              h1 { color: #333; }
+              .preview-list { list-style-type: none; padding: 0; }
+              .preview-item { padding: 10px 15px; margin-bottom: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
+              a { color: #007bff; text-decoration: none; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>Feature Branch Previews</h1>
+            <p>Select a feature branch preview to view:</p>
+            <ul class="preview-list">
+          EOF
+          
+          # List all preview directories and add them to the index
+          for dir in previews/*/; do
+            if [ -d "$dir" ] && [ "$dir" != "previews/index.html" ]; then
+              preview_name=$(basename "$dir")
+              echo "  <li class=\"preview-item\"><a href=\"$preview_name/\">$preview_name</a></li>" >> previews/index.html
+            fi
+          done
+          
+          # Close the HTML file
+          cat >> previews/index.html << EOF
+            </ul>
+            <p><em>Last updated: $(date)</em></p>
+          </body>
+          </html>
+          EOF
+          
+          # Add and commit the index
+          git add previews/index.html
+          git commit -m "Update previews index" || true
+          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }} main || true
+          
+          echo "✅ Previews index updated and available at: https://chaddorsey.github.io/previews/" 
