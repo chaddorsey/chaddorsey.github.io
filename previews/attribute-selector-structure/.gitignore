@@ -1,0 +1,23 @@
+# Ignore large raw data files
+assets/data/*/raw/
+CODAP-plugins/CountyHealthSelect/assets/data/*/raw/
+**/assets/data/*/raw/
+
+# Specific large files
+CODAP-plugins/CountyHealthSelect/assets/data/CountyHealth-All-Data.zip
+.git.bak
+..bfg-report
+bfg.jar
+
+# Node modules - ensure all node_modules directories are excluded
+node_modules/
+**/node_modules/
+**/*/node_modules/
+**/*/*/node_modules/
+**/*/*/*/node_modules/
+**/*/*/*/*/node_modules/
+**/*/*/*/*/*/node_modules/
+**/*/*/*/*/*/*/node_modules/
+
+# Also exclude any paths that are too long or problematic
+**/attribute-selector-structure/
