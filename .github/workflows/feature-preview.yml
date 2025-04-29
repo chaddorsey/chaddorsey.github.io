@@ -34,68 +34,61 @@ jobs:
 
       - name: Checkout feature branch to temporary location
         run: |
-          # Create a temp directory for the feature branch content
           mkdir -p /tmp/feature-content
-          
-          # Checkout the feature branch that triggered this workflow
           git worktree add --detach /tmp/feature-content ${{ github.sha }}
-          
           echo "Feature branch content:"
           ls -la /tmp/feature-content/
 
       - name: Prepare feature branch content for deployment
+        shell: bash
         run: |
-          # Create or clean the target directory
           mkdir -p previews/${{ env.FEATURE_NAME }}
           rm -rf previews/${{ env.FEATURE_NAME }}/*
           
-          # Copy content from feature branch, excluding problematic directories
           rsync -av --exclude 'node_modules' --exclude '.git' --exclude '.github' \
                 --exclude 'attribute-selector-structure' \
                 /tmp/feature-content/ previews/${{ env.FEATURE_NAME }}/
           
-          # Create a notice file indicating this is a preview
-          cat > previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md << EOF
-          # Preview Environment
+          # Create a preview notice file
+          echo "# Preview Environment" > previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "" >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "This is a preview of the \`${{ env.FEATURE_NAME }}\` feature branch." >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "" >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "Last updated: $(date)" >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "" >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
+          echo "Commit: ${{ github.sha }}" >> previews/${{ env.FEATURE_NAME }}/PREVIEW_NOTICE.md
           
-          This is a preview of the \`${{ env.FEATURE_NAME }}\` feature branch.
-          
-          Last updated: $(date)
-          
-          Commit: ${{ github.sha }}
-          EOF
-          
-          # Create an index.html if none exists (optional, remove if not needed)
+          # Create an index.html if none exists
           if [ ! -f previews/${{ env.FEATURE_NAME }}/index.html ]; then
-            cat > previews/${{ env.FEATURE_NAME }}/index.html << EOF
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>${{ env.FEATURE_NAME }} Preview</title>
-              <style>
-                body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
-                h1 { color: #333; }
-                .notice { background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-bottom: 20px; }
-                a { color: #007bff; text-decoration: none; }
-                a:hover { text-decoration: underline; }
-              </style>
-            </head>
-            <body>
-              <h1>${{ env.FEATURE_NAME }} Preview</h1>
-              <div class="notice">
-                <p>This is a preview deployment of the <strong>${{ env.FEATURE_NAME }}</strong> feature branch.</p>
-                <p>Commit: <code>${{ github.sha }}</code></p>
-                <p>Last updated: <code>$(date)</code></p>
-              </div>
-              <h2>Available Resources</h2>
-              <ul>
-                <li><a href="CODAP-plugins/">CODAP Plugins</a></li>
-              </ul>
-            </body>
-            </html>
-            EOF
+            # Create a simple index.html file with a preview notice and links
+            HTML_FILE=previews/${{ env.FEATURE_NAME }}/index.html
+            echo "<!DOCTYPE html>" > $HTML_FILE
+            echo "<html lang=\"en\">" >> $HTML_FILE
+            echo "<head>" >> $HTML_FILE
+            echo "  <meta charset=\"UTF-8\">" >> $HTML_FILE
+            echo "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $HTML_FILE
+            echo "  <title>${{ env.FEATURE_NAME }} Preview</title>" >> $HTML_FILE
+            echo "  <style>" >> $HTML_FILE
+            echo "    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }" >> $HTML_FILE
+            echo "    h1 { color: #333; }" >> $HTML_FILE
+            echo "    .notice { background: #f8f9fa; padding: 15px; border-left: 4px solid #007bff; margin-bottom: 20px; }" >> $HTML_FILE
+            echo "    a { color: #007bff; text-decoration: none; }" >> $HTML_FILE
+            echo "    a:hover { text-decoration: underline; }" >> $HTML_FILE
+            echo "  </style>" >> $HTML_FILE
+            echo "</head>" >> $HTML_FILE
+            echo "<body>" >> $HTML_FILE
+            echo "  <h1>${{ env.FEATURE_NAME }} Preview</h1>" >> $HTML_FILE
+            echo "  <div class=\"notice\">" >> $HTML_FILE
+            echo "    <p>This is a preview deployment of the <strong>${{ env.FEATURE_NAME }}</strong> feature branch.</p>" >> $HTML_FILE
+            echo "    <p>Commit: <code>${{ github.sha }}</code></p>" >> $HTML_FILE
+            echo "    <p>Last updated: <code>$(date)</code></p>" >> $HTML_FILE
+            echo "  </div>" >> $HTML_FILE
+            echo "  <h2>Available Resources</h2>" >> $HTML_FILE
+            echo "  <ul>" >> $HTML_FILE
+            echo "    <li><a href=\"CODAP-plugins/\">CODAP Plugins</a></li>" >> $HTML_FILE
+            echo "  </ul>" >> $HTML_FILE
+            echo "</body>" >> $HTML_FILE
+            echo "</html>" >> $HTML_FILE
           fi
           
           echo "Preview content prepared at previews/${{ env.FEATURE_NAME }}:"
@@ -120,48 +113,45 @@ jobs:
           fi
 
       - name: Create index for all previews
+        shell: bash
         run: |
-          # Create an index of all available previews
           mkdir -p previews
           
-          # Generate the HTML content
-          cat > previews/index.html << EOF
-          <!DOCTYPE html>
-          <html lang="en">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Feature Branch Previews</title>
-            <style>
-              body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }
-              h1 { color: #333; }
-              .preview-list { list-style-type: none; padding: 0; }
-              .preview-item { padding: 10px 15px; margin-bottom: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }
-              a { color: #007bff; text-decoration: none; }
-              a:hover { text-decoration: underline; }
-            </style>
-          </head>
-          <body>
-            <h1>Feature Branch Previews</h1>
-            <p>Select a feature branch preview to view:</p>
-            <ul class="preview-list">
-          EOF
+          # Create the index.html file for all previews
+          INDEX_FILE=previews/index.html
+          echo "<!DOCTYPE html>" > $INDEX_FILE
+          echo "<html lang=\"en\">" >> $INDEX_FILE
+          echo "<head>" >> $INDEX_FILE
+          echo "  <meta charset=\"UTF-8\">" >> $INDEX_FILE
+          echo "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" >> $INDEX_FILE
+          echo "  <title>Feature Branch Previews</title>" >> $INDEX_FILE
+          echo "  <style>" >> $INDEX_FILE
+          echo "    body { font-family: Arial, sans-serif; line-height: 1.6; padding: 20px; max-width: 800px; margin: 0 auto; }" >> $INDEX_FILE
+          echo "    h1 { color: #333; }" >> $INDEX_FILE
+          echo "    .preview-list { list-style-type: none; padding: 0; }" >> $INDEX_FILE
+          echo "    .preview-item { padding: 10px 15px; margin-bottom: 10px; background: #f8f9fa; border-left: 4px solid #007bff; }" >> $INDEX_FILE
+          echo "    a { color: #007bff; text-decoration: none; }" >> $INDEX_FILE
+          echo "    a:hover { text-decoration: underline; }" >> $INDEX_FILE
+          echo "  </style>" >> $INDEX_FILE
+          echo "</head>" >> $INDEX_FILE
+          echo "<body>" >> $INDEX_FILE
+          echo "  <h1>Feature Branch Previews</h1>" >> $INDEX_FILE
+          echo "  <p>Select a feature branch preview to view:</p>" >> $INDEX_FILE
+          echo "  <ul class=\"preview-list\">" >> $INDEX_FILE
           
           # List all preview directories and add them to the index
           for dir in previews/*/; do
             if [ -d "$dir" ] && [ "$dir" != "previews/index.html" ]; then
               preview_name=$(basename "$dir")
-              echo "  <li class=\"preview-item\"><a href=\"$preview_name/\">$preview_name</a></li>" >> previews/index.html
+              echo "    <li class=\"preview-item\"><a href=\"$preview_name/\">$preview_name</a></li>" >> $INDEX_FILE
             fi
           done
           
           # Close the HTML file
-          cat >> previews/index.html << EOF
-            </ul>
-            <p><em>Last updated: $(date)</em></p>
-          </body>
-          </html>
-          EOF
+          echo "  </ul>" >> $INDEX_FILE
+          echo "  <p><em>Last updated: $(date)</em></p>" >> $INDEX_FILE
+          echo "</body>" >> $INDEX_FILE
+          echo "</html>" >> $INDEX_FILE
           
           # Add and commit the index
           git add previews/index.html
