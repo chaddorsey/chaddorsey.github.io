@@ -59,4 +59,6 @@ const rawAttributes = [
 export const attributes = rawAttributes.map(attr => {
   const { name, unit } = extractNameAndUnit(attr.name);
   return unit ? { ...attr, name, unit } : { ...attr, name };
-}); 
+});
+
+export { rawAttributes }; 
