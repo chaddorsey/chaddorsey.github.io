@@ -403,9 +403,10 @@ function preclearDataGroup(attributeName, value, collectionSpec, datasetName) {
  * @return {{collections: [{name: string, attrs: *}], name, title}}
  */
 function specifyDataset(datasetName, collectionList, url) {
+  const year = '2025';
   return {
-    name: datasetName,
-    title: datasetName,
+    name: `${datasetName} (${year})`,
+    title: `${datasetName} (${year})`,
     collections: collectionList,
     metadata: {
       source: url,
