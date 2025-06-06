@@ -40,6 +40,10 @@ function setEventHandler (selector, event, handler, capture) {
 
 function setMessage(message) {
   let messageEl = document.querySelector(".fe-message-area");
+  if (!messageEl) {
+    console.warn("setMessage: .fe-message-area element not found");
+    return;
+  }
   messageEl.innerHTML = message;
   messageEl.title = message; // set the title, if the message is clipped.
 }
@@ -53,6 +57,11 @@ function setTransferStatus(status, message) {
   let getButtonIsActive = true;
   // let waiting = false;
   let el = document.querySelector('.fe-summary');
+  if (!el) {
+    console.warn("setTransferStatus: .fe-summary element not found");
+    setMessage(message);
+    return;
+  }
   let statusClass = '';
   if (status === 'busy' ||
       status === 'retrieving' ||
@@ -72,7 +81,12 @@ function setTransferStatus(status, message) {
   el.classList.remove('fe-transfer-in-progress', 'fe-transfer-success', 'fe-transfer-failure');
   if (statusClass) { el.classList.add(statusClass); }
 
-  el.querySelector('.fe-fetch-button').disabled=!getButtonIsActive;
+  const fetchButton = el.querySelector('.fe-fetch-button');
+  if (fetchButton) {
+    fetchButton.disabled = !getButtonIsActive;
+  } else {
+    console.warn("setTransferStatus: .fe-fetch-button not found inside .fe-summary");
+  }
   // setWaitCursor(waiting);
   setMessage(message);
 }
