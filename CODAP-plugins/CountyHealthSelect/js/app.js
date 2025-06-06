@@ -45,9 +45,9 @@ function getBaseURL() {
 const DATASETS = [
   {
     id: 'CountyHealthByState',
-    name: `County Health Indicators 2023, By State`,
+    name: `County Health Indicators 2025, By State`,
     documentation: 'https://countyhealth.org',
-    endpoint: `assets/data/2023/csv`,
+    endpoint: `assets/data/2025/csv`,
     selectedAttributeNames: [
       'State',
       'FIPS',
@@ -235,7 +235,7 @@ const DATASETS = [
       try {
         let stateCode = document.querySelector('#state-select').value;
         const basePath = getBaseURL();
-        const url = `${basePath}/assets/data/2023/csv/2023-CountyHealth-${stateCode}.csv`;
+        const url = `${basePath}/assets/data/2025/csv/2025-CountyHealth-${stateCode}.csv`;
         return url;
       } catch (error) {
         console.error('Error creating URL:', error);
