@@ -2,6 +2,8 @@
 // Attribute configuration: single source of truth for all attribute metadata
 // ==========================================================================
 
+import { extractNameAndUnit } from './attributeUtils.js';
+
 // Example groupings (expand as needed)
 export const attributeGroups = [
   { id: 'demographics', title: 'Demographics' },
@@ -12,7 +14,7 @@ export const attributeGroups = [
 ];
 
 // Attribute definitions (expand as needed)
-export const attributes = [
+const rawAttributes = [
   { name: 'State', group: 'demographics' },
   { name: 'County', group: 'demographics' },
   { name: 'boundary', group: 'demographics', type: 'boundary', formula: 'lookupBoundary(US_county_boundaries, County + ", " + State)', description: 'Boundary for the county, used for mapping.', hidden: true },
@@ -52,4 +54,9 @@ export const attributes = [
   { name: 'Proficient in English (%)', group: 'education', description: 'Percentage of the population that is proficient in the English language.' },
   { name: 'Youth Not in School or Employment (%)', group: 'education', description: 'Percentage of teens and young adults ages 16-19 who are neither working nor in school.' },
   // Add more attributes as needed
-]; 
+];
+
+export const attributes = rawAttributes.map(attr => {
+  const { name, unit } = extractNameAndUnit(attr.name);
+  return unit ? { ...attr, name, unit } : { ...attr, name };
+}); 
