@@ -85,6 +85,65 @@ function generateAttributeCheckboxes() {
     const groupAttrs = groupedAttributes[group.id];
     // Clear any existing rows
     container.innerHTML = '';
+
+    // --- Header row with Select All and Clear all ---
+    const headerRow = document.createElement('tr');
+    headerRow.className = 'wx-select-all-row';
+    const thSelectAll = document.createElement('th');
+    thSelectAll.colSpan = 2;
+    thSelectAll.style.padding = '0';
+
+    // Flex container for right-justified links/text
+    const linkFlex = document.createElement('div');
+    linkFlex.className = 'wx-select-all-flex';
+
+    // Determine if all attributes are selected
+    const allSelected = attributeSelectorState.categories[group.id].attributes.size === groupAttrs.length;
+
+    // Select all or all-selected text/link
+    if (allSelected) {
+      const allSelectedText = document.createElement('span');
+      allSelectedText.className = 'wx-all-selected-text';
+      allSelectedText.textContent = 'All attributes selected';
+      linkFlex.appendChild(allSelectedText);
+    } else {
+      const selectAllLink = document.createElement('a');
+      selectAllLink.href = '#';
+      selectAllLink.textContent = 'Select all';
+      selectAllLink.className = 'wx-select-all-link';
+      selectAllLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        groupAttrs.forEach(attr => attributeSelectorState.categories[group.id].attributes.add(attr.name));
+        generateAttributeCheckboxes();
+        updateCategorySelectionSummary(group.id);
+        updateCategorySelectionCount(group.id);
+        updateSummaryArea();
+        notifyAttributeSelectionChanged();
+      });
+      linkFlex.appendChild(selectAllLink);
+    }
+
+    // Clear all link (always shown)
+    const clearAllLink = document.createElement('a');
+    clearAllLink.href = '#';
+    clearAllLink.textContent = 'Clear all';
+    clearAllLink.className = 'wx-clear-all-link';
+    clearAllLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      attributeSelectorState.categories[group.id].attributes.clear();
+      generateAttributeCheckboxes();
+      updateCategorySelectionSummary(group.id);
+      updateCategorySelectionCount(group.id);
+      updateSummaryArea();
+      notifyAttributeSelectionChanged();
+    });
+    linkFlex.appendChild(clearAllLink);
+
+    thSelectAll.appendChild(linkFlex);
+    headerRow.appendChild(thSelectAll);
+    container.appendChild(headerRow);
+    // --- End header row ---
+
     groupAttrs.forEach(attr => {
       const row = document.createElement('tr');
       // Checkbox cell
@@ -128,6 +187,8 @@ function handleAttributeCheckboxChange(event, categoryId, attributeId) {
   } else {
     attributeSelectorState.categories[categoryId].attributes.delete(attributeId);
   }
+  // Always re-render the checkboxes and header to ensure correct Select all/All attributes selected logic
+  generateAttributeCheckboxes();
   updateCategorySelectionSummary(categoryId);
   updateCategorySelectionCount(categoryId);
   updateSummaryArea();

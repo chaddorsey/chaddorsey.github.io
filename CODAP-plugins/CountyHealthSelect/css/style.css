@@ -838,3 +838,52 @@ input[type=radio]:checked:before {
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* Attribute Selector: Select All / Clear all header row */
+.wx-select-all-row {
+  border-top: 1px solid #ddd;
+  background: #fafbfc;
+}
+.wx-select-all-flex {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 2em;
+  padding: 0.8748em 0.5em 0.8748em 0.5em;
+  font-style: italic;
+}
+.wx-all-selected-text {
+  color: #444;
+  font-style: italic;
+}
+.wx-select-all-link {
+  color: #888;
+  font-size: 0.95em;
+  font-style: italic;
+  text-decoration: none;
+  cursor: pointer;
+}
+.wx-clear-all-link {
+  color: #888;
+  font-size: 0.95em;
+  font-style: italic;
+  text-decoration: none;
+  cursor: pointer;
+}
+.wx-select-all-row th {
+  padding: 0;
+  border-bottom: none;
+  position: relative;
+}
+
+/* Remove the custom short horizontal rules above and below the select-all row */
+.wx-select-all-row th::after,
+.wx-select-all-row th::before {
+  display: none;
+}
+
+/* Add more vertical space below the select-all row and above the attribute checkboxes */
+#demographics-attributes, #health-attributes, #environment-attributes, #education-attributes {
+  margin-top: 1.5em;
+  padding-top: 1.5em;
+}
