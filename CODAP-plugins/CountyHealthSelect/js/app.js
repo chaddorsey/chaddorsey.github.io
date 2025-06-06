@@ -23,6 +23,7 @@ import * as ui from './ui.js'
 import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
 import { attributes as attributeConfigAttributes } from './attributeConfig.js';
 import { rawAttributes } from './attributeConfig.js'; // Import rawAttributes for dataKey mapping
+import { extractNameAndUnit } from './attributeUtils.js';
 
 const CURRENT_DATA_YEAR = '2025'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
