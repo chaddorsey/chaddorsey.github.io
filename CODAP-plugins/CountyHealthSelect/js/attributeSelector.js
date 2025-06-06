@@ -19,69 +19,31 @@
 
 // Import base URL helper if needed for asset loading
 import { getBaseURL } from './app.js';
+import { nameToDescription } from './attributeDescriptions.js';
+import { attributeGroups, attributes } from './attributeConfig.js';
 
 /**
  * Manages the attribute selector UI component
  */
 
-// Define the attributes for each category
-const attributeDefinitions = {
-  health: [
-    { id: 'life-expectancy', name: 'Average Life Expectancy (years)' },
-    { id: 'poor-physical-health', name: 'Days of Poor Physical Health (days/month)' },
-    { id: 'poor-mental-health', name: 'Days of Poor Mental Health (days/month)' },
-    { id: 'primary-care-rate', name: 'Primary Care Doctor Rate (doctors/100,000)' },
-    { id: 'mental-health-providers', name: 'Mental Health Providers (providers/100,000)' },
-    { id: 'physically-inactive', name: 'Physically Inactive (%)' },
-    { id: 'smokers', name: 'Smokers (%)' },
-    { id: 'insufficient-sleep', name: 'Insufficient Sleep (%)' },
-    { id: 'drug-overdose-rate', name: 'Drug Overdose Death Rate (deaths/100,000 people)' },
-    { id: 'motor-vehicle-death-rate', name: 'Motor Vehicle Death Rate (deaths/100,000 people)' },
-    { id: 'firearm-death-rate', name: 'Firearm Death Rate (deaths/100,000 people)' },
-    { id: 'teen-birth-rate', name: 'Teen Birth Rate (births/per teens)' },
-    { id: 'limited-healthy-foods', name: 'Limited Access to Healthy Foods (%)' }
-  ],
-  environment: [
-    { id: 'air-pollution', name: 'Air Pollution (fine particulate matter in micrograms/cubic meter of air)' },
-    { id: 'rural-living', name: 'Rural Living (%)' },
-    { id: 'broadband-access', name: 'Broadband Access (%)' },
-    { id: 'severe-housing-problems', name: 'Severe Housing Problems (%)' },
-    { id: 'homeowners', name: 'Homeowners (%)' },
-    { id: 'median-household-income', name: 'Median Household Income ($)' },
-    { id: 'children-in-poverty', name: 'Children in Poverty (%)' }
-  ],
-  education: [
-    { id: 'high-school-graduation', name: 'Students Graduating from High School (%)' },
-    { id: 'some-college', name: 'Some College (%)' },
-    { id: 'proficient-in-english', name: 'Proficient in English (%)' },
-    { id: 'youth-not-in-school', name: 'Youth Not in School or Employment (%)' },
-    { id: 'juvenile-arrest-rate', name: 'Juvenile Arrest Rate (arrests/1,000 juveniles)' }
-  ]
-};
+// Build a grouped attribute map for UI rendering
+const groupedAttributes = {};
+attributeGroups.forEach(group => {
+  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id);
+});
 
 // State management for attribute selector
 const attributeSelectorState = {
-  categories: {
-    health: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set() // Will store selected attributes
-    },
-    environment: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set()
-    },
-    education: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set()
-    }
-  }
+  categories: {}
 };
+attributeGroups.forEach(group => {
+  attributeSelectorState.categories[group.id] = {
+    expanded: false,
+    enabled: true,
+    allSelected: true,
+    attributes: new Set(groupedAttributes[group.id].map(attr => attr.name))
+  };
+});
 
 /**
  * Initialize the attribute selector component
@@ -89,7 +51,10 @@ const attributeSelectorState = {
 function initializeAttributeSelector() {
   console.log('[DEBUG] initializeAttributeSelector called');
   // Initialize all attributes as selected
-  initializeAttributeState();
+  attributeGroups.forEach(group => {
+    attributeSelectorState.categories[group.id].attributes = new Set(groupedAttributes[group.id].map(attr => attr.name));
+    attributeSelectorState.categories[group.id].allSelected = true;
+  });
   console.log('[DEBUG] attributeSelectorState after initialize:', JSON.stringify(attributeSelectorState));
   // Generate checkboxes
   generateAttributeCheckboxes();
@@ -101,26 +66,12 @@ function initializeAttributeSelector() {
     console.log('[DEBUG] Attached click handler to header:', header);
   });
   // Initialize selection summaries and counts
-  for (const categoryId in attributeDefinitions) {
-    updateCategorySelectionSummary(categoryId);
-    updateCategorySelectionCount(categoryId);
-  }
+  attributeGroups.forEach(group => {
+    updateCategorySelectionSummary(group.id);
+    updateCategorySelectionCount(group.id);
+  });
   // Update summary area
   updateSummaryArea();
-}
-
-/**
- * Initialize the attribute state for all categories
- */
-function initializeAttributeState() {
-  // Select all attributes by default
-  for (const categoryId in attributeDefinitions) {
-    const attributes = attributeDefinitions[categoryId];
-    attributes.forEach(attr => {
-      attributeSelectorState.categories[categoryId].attributes.add(attr.id);
-    });
-    attributeSelectorState.categories[categoryId].allSelected = true;
-  }
 }
 
 /**
@@ -128,39 +79,43 @@ function initializeAttributeState() {
  */
 function generateAttributeCheckboxes() {
   console.log('[DEBUG] generateAttributeCheckboxes called');
-  for (const categoryId in attributeDefinitions) {
-    const container = document.getElementById(`${categoryId}-attributes`);
-    console.log(`[DEBUG] For category '${categoryId}', found container:`, container);
-    const attributes = attributeDefinitions[categoryId];
+  attributeGroups.forEach(group => {
+    const container = document.getElementById(`${group.id}-attributes`);
+    console.log(`[DEBUG] For category '${group.id}', found container:`, container);
+    const groupAttrs = groupedAttributes[group.id];
     // Clear any existing rows
     container.innerHTML = '';
-    attributes.forEach(attr => {
+    groupAttrs.forEach(attr => {
       const row = document.createElement('tr');
       // Checkbox cell
       const tdCheckbox = document.createElement('td');
       const checkbox = document.createElement('input');
       checkbox.type = 'checkbox';
-      checkbox.id = `attr-${attr.id}`;
-      checkbox.checked = attributeSelectorState.categories[categoryId].attributes.has(attr.id);
-      checkbox.addEventListener('change', (event) => handleAttributeCheckboxChange(event, categoryId, attr.id));
+      checkbox.id = `attr-${attr.name}`;
+      checkbox.checked = attributeSelectorState.categories[group.id].attributes.has(attr.name);
+      checkbox.addEventListener('change', (event) => handleAttributeCheckboxChange(event, group.id, attr.name));
       tdCheckbox.appendChild(checkbox);
       // Label and description cell
       const tdLabel = document.createElement('td');
       const label = document.createElement('label');
-      label.htmlFor = `attr-${attr.id}`;
+      label.htmlFor = `attr-${attr.name}`;
       label.textContent = attr.name;
-      // Placeholder for description
-      const desc = document.createElement('span');
-      desc.className = 'attr-description';
-      desc.textContent = ' [Description placeholder]';
-      tdLabel.appendChild(label);
-      tdLabel.appendChild(desc);
+      // Always show description below name
+      if (attr.description) {
+        const desc = document.createElement('div');
+        desc.className = 'attr-description';
+        desc.textContent = attr.description;
+        tdLabel.appendChild(label);
+        tdLabel.appendChild(desc);
+      } else {
+        tdLabel.appendChild(label);
+      }
       row.appendChild(tdCheckbox);
       row.appendChild(tdLabel);
       container.appendChild(row);
-      console.log(`[DEBUG] Rendered checkbox for '${attr.name}' in category '${categoryId}'`);
+      console.log(`[DEBUG] Rendered checkbox for '${attr.name}' in category '${group.id}'`);
     });
-  }
+  });
 }
 
 /**
@@ -186,7 +141,7 @@ function updateCategorySelectionSummary(categoryId) {
   const userSelection = document.querySelector(`#${categoryId}-section .wx-user-selection`);
   const selected = Array.from(attributeSelectorState.categories[categoryId].attributes);
   const names = selected.map(id => {
-    const attr = attributeDefinitions[categoryId].find(a => a.id === id);
+    const attr = groupedAttributes[categoryId].find(a => a.name === id);
     return attr ? attr.name : id;
   });
   userSelection.textContent = names.slice(0, 3).join(', ') + (names.length > 3 ? ', ...' : '');
@@ -198,8 +153,8 @@ function updateCategorySelectionSummary(categoryId) {
 function updateCategorySelectionCount(categoryId) {
   const countSpan = document.querySelector(`#${categoryId}-section .wx-selection-count`);
   const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
-  const totalCount = attributeDefinitions[categoryId].length;
-  countSpan.textContent = `${selectedCount} / ${totalCount}`;
+  // Only show the selected count, not 'selected/total'
+  countSpan.textContent = `${selectedCount}`;
 }
 
 /**
@@ -258,7 +213,7 @@ function getSelectedAttributes() {
   const selectedAttributes = [];
   
   // Iterate through all categories
-  for (const categoryId in attributeDefinitions) {
+  for (const categoryId in attributeSelectorState.categories) {
     // Skip disabled categories
     if (!attributeSelectorState.categories[categoryId].enabled) {
       console.log(`Category ${categoryId} is disabled, skipping`);
@@ -299,18 +254,18 @@ function getSelectedAttributesForCategory(categoryId) {
   
   // If "All" is selected for this category, return all attribute names
   if (attributeSelectorState.categories[categoryId].allSelected) {
-    return attributeDefinitions[categoryId].map(attr => attr.name);
+    return groupedAttributes[categoryId].map(attr => attr.name);
   }
   
   // Otherwise, map the selected IDs to names
   const selectedAttributeIds = Array.from(attributeSelectorState.categories[categoryId].attributes);
-  const attributes = attributeDefinitions[categoryId];
+  const attributes = groupedAttributes[categoryId];
   
   console.log(`Category ${categoryId}: has ${selectedAttributeIds.length} IDs selected out of ${attributes.length} total`);
   
   // Map IDs to actual attribute names
   const result = selectedAttributeIds.map(id => {
-    const attribute = attributes.find(attr => attr.id === id);
+    const attribute = attributes.find(attr => attr.name === id);
     if (!attribute) {
       console.warn(`Warning: No attribute found with ID "${id}" in category "${categoryId}"`);
       return null;
