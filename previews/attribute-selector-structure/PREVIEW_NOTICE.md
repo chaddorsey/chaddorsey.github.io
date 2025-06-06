@@ -2,6 +2,6 @@
 
 This is a preview of the `attribute-selector-structure` feature branch.
 
-Last updated: Fri Jun  6 14:05:48 UTC 2025
+Last updated: Fri Jun  6 14:22:53 UTC 2025
 
-Commit: 1eaad69ed4a5d25a4d47ac86e25e7850694648d9
+Commit: 9e5c1b91f784dc4df8f1f03aa328efa8d5379fca
