@@ -22,6 +22,8 @@ import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
 import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
 import { attributes as attributeConfigAttributes } from './attributeConfig.js';
+import { rawAttributes } from './attributeConfig.js'; // Import rawAttributes for dataKey mapping
+import { extractNameAndUnit } from './attributeUtils.js';
 
 const CURRENT_DATA_YEAR = '2025'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
@@ -106,7 +108,7 @@ const DATASETS = [
     },
     {
       name: 'boundary',
-      formula: 'lookupBoundary(US_county_boundaries,County_Full)',
+      formula: 'lookupBoundary(US_county_boundaries,County + ", " + State)',
     },
     {
       name: 'Average Life Expectancy (years)',
@@ -981,19 +983,33 @@ function getAttributeByName(name) {
 function resolveAttributes(datasetSpec, attributeNames) {
   let omittedAttributeNames = datasetSpec.omittedAttributeNames || [];
   let selectedAttributeNames = datasetSpec.selectedAttributeNames;
-  
-  console.log('Resolving attributes. All attributes found in data:', attributeNames.length);
-  console.log('Selected attributes:', selectedAttributeNames ? selectedAttributeNames.length : 'none specified');
-  
+
+  // Always ensure State, County, and boundary are included
+  const coreAttributes = ['State', 'County', 'boundary'];
+  let allAttributeNames = selectedAttributeNames ? [...selectedAttributeNames] : [...attributeNames];
+  coreAttributes.forEach(attr => {
+    if (!allAttributeNames.includes(attr)) {
+      allAttributeNames.push(attr);
+    }
+  });
+
+  // Remove boundary from its current position if present
+  allAttributeNames = allAttributeNames.filter(name => name !== 'boundary');
+  // Add boundary as the last column
+  allAttributeNames.push('boundary');
+
   // Only use attributes that are either explicitly selected or not in the omitted list
-  // Make sure we only include attributes that are in both the data and the selected list
-  attributeNames = selectedAttributeNames ? 
-    selectedAttributeNames.filter(name => attributeNames.includes(name)) : 
-    attributeNames.filter(
-      function (attrName) {
-        return !omittedAttributeNames.includes(attrName);
-      });
-      
+  // Make sure we only include attributes that are in both the data and the selected list,
+  // OR are selected and have a formula in the config (for computed attributes like 'boundary')
+  attributeNames = allAttributeNames.filter(name => {
+    if (attributeNames.includes(name)) {
+      return true;
+    }
+    // If not present in data, include if it has a formula in config
+    const configAttr = getAttributeByName(name);
+    return configAttr && configAttr.formula;
+  });
+  
   console.log('Filtered attribute names:', attributeNames.length);
   
   if (attributeNames) {
@@ -1004,9 +1020,13 @@ function resolveAttributes(datasetSpec, attributeNames) {
         // Use dataKey for export if present, otherwise name
         const exportName = configAttr.dataKey || configAttr.name;
         return {
-          name: configAttr.name, // Display name for CODAP UI
+          name: configAttr.name, // Display name for CODAP UI (no unit)
           exportName, // Actual data column name for export
+          ...(configAttr.unit ? { unit: configAttr.unit } : {}),
+          ...(configAttr.type ? { type: configAttr.type } : {}),
+          ...(configAttr.formula ? { formula: configAttr.formula } : {}),
           ...(configAttr.description ? { description: configAttr.description } : {}),
+          ...(configAttr.hidden !== undefined ? { hidden: configAttr.hidden } : {}),
           // Optionally include other metadata (formula, group, etc.) if needed
         };
       } else {
@@ -1253,9 +1273,14 @@ function fetchDataAndProcess() {
             // Build a mapping from display name to data key
             const selectedAttributes = datasetSpec.selectedAttributeNames.map(name => {
               const configAttr = getAttributeByName(name);
+              // Find the raw attribute with matching cleaned name
+              const rawAttr = rawAttributes.find(attr => {
+                const { name: cleanedName } = extractNameAndUnit(attr.name);
+                return cleanedName === name;
+              });
               return {
                 displayName: name,
-                dataKey: configAttr && configAttr.dataKey ? configAttr.dataKey : name
+                dataKey: rawAttr ? rawAttr.name : (configAttr && configAttr.dataKey ? configAttr.dataKey : name)
               };
             });
             // Apply attribute filtering to each data row

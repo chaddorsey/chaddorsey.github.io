@@ -2,6 +2,8 @@
 // Attribute configuration: single source of truth for all attribute metadata
 // ==========================================================================
 
+import { extractNameAndUnit } from './attributeUtils.js';
+
 // Example groupings (expand as needed)
 export const attributeGroups = [
   { id: 'demographics', title: 'Demographics' },
@@ -12,12 +14,10 @@ export const attributeGroups = [
 ];
 
 // Attribute definitions (expand as needed)
-export const attributes = [
+const rawAttributes = [
   { name: 'State', group: 'demographics' },
-  { name: 'FIPS', group: 'demographics' },
   { name: 'County', group: 'demographics' },
-  { name: 'County_Full', group: 'demographics', formula: 'concat(County, ", ", State)' },
-  { name: 'boundary', group: 'demographics', formula: 'lookupBoundary(US_county_boundaries,County_Full)' },
+  { name: 'boundary', group: 'demographics', type: 'boundary', formula: 'lookupBoundary(US_county_boundaries, County + ", " + State)', description: 'Boundary for the county, used for mapping.', hidden: true },
   { name: 'Average Life Expectancy (years)', group: 'health', description: 'Average number of years from birth a person is expected to live' },
   { name: 'Days of Poor Physical Health (days/month)', group: 'health', description: 'Adults were asked the following question: "Thinking about your physical health, which includes physical illness and injury, for how many days during the past 30 days was your physical health not good?" The value represents the average number of days reported.' },
   { name: 'Days of Poor Mental Health (days/month)', group: 'health', description: 'Adults were asked the following question: "Thinking about your mental health, which includes stress, depression, and problems with emotions, for how many days during the past 30 days was your mental health not good?" The value represents the average number of days reported.' },
@@ -43,7 +43,6 @@ export const attributes = [
   // { name: 'American Indian & Alaska Native (%)', dataKey: '% American Indian or Alaska Native', group: 'demographics', description: 'Percentage of the population that identifies as American Indian or Alaska Native. Source: County Health Rankings 2025.' },
   // { name: 'Native Hawaiian / Other Pacific Islander (%)', dataKey: '% Native Hawaiian or Other Pacific Islander', group: 'demographics', description: 'Percentage of the population that identifies as Native Hawaiian or Other Pacific Islander. Source: County Health Rankings 2025.' },
   { name: 'Non-Hispanic White (%)', group: 'demographics' },
-  { name: 'Majority Minority', group: 'demographics' },
   { name: 'Population', group: 'demographics', description: 'Total number of residents.' },
   { name: 'Motor Vehicle Death Rate (deaths/100,000 people)', group: 'health', description: 'Number of deaths caused by motor vehicle crashes per 100,000 people.' },
   { name: 'Drug Overdose Death Rate (deaths/100,000 people)', group: 'health', description: 'Number of drug poisoning deaths per 100,000 people.' },
@@ -55,4 +54,11 @@ export const attributes = [
   { name: 'Proficient in English (%)', group: 'education', description: 'Percentage of the population that is proficient in the English language.' },
   { name: 'Youth Not in School or Employment (%)', group: 'education', description: 'Percentage of teens and young adults ages 16-19 who are neither working nor in school.' },
   // Add more attributes as needed
-]; 
+];
+
+export const attributes = rawAttributes.map(attr => {
+  const { name, unit } = extractNameAndUnit(attr.name);
+  return unit ? { ...attr, name, unit } : { ...attr, name };
+});
+
+export { rawAttributes }; 

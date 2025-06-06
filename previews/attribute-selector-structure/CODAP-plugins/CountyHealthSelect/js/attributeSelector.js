@@ -27,9 +27,10 @@ import { attributeGroups, attributes } from './attributeConfig.js';
  */
 
 // Build a grouped attribute map for UI rendering
+const NON_SELECTABLE_ATTRIBUTES = ['boundary', 'State', 'County'];
 const groupedAttributes = {};
 attributeGroups.forEach(group => {
-  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id);
+  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id && !NON_SELECTABLE_ATTRIBUTES.includes(attr.name));
 });
 
 // State management for attribute selector
@@ -161,7 +162,7 @@ function generateAttributeCheckboxes() {
       const tdLabel = document.createElement('td');
       const label = document.createElement('label');
       label.htmlFor = `attr-${attr.name}`;
-      label.textContent = attr.name;
+      label.textContent = attr.unit ? `${attr.name} (${attr.unit})` : attr.name;
       // Always show description below name
       if (attr.description) {
         const desc = document.createElement('div');
@@ -295,9 +296,7 @@ function getSelectedAttributes() {
   // Add core attributes that should always be included
   const coreAttributes = [
     'State',
-    'FIPS',
     'County',
-    'County_Full',
     'boundary'
   ];
   // Combine core and selected attributes (avoiding duplicates)
