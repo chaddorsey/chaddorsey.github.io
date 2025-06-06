@@ -1018,8 +1018,9 @@ function resolveAttributes(datasetSpec, attributeNames) {
         // Use dataKey for export if present, otherwise name
         const exportName = configAttr.dataKey || configAttr.name;
         return {
-          name: configAttr.name, // Display name for CODAP UI
+          name: configAttr.name, // Display name for CODAP UI (no unit)
           exportName, // Actual data column name for export
+          ...(configAttr.unit ? { unit: configAttr.unit } : {}),
           ...(configAttr.type ? { type: configAttr.type } : {}),
           ...(configAttr.formula ? { formula: configAttr.formula } : {}),
           ...(configAttr.description ? { description: configAttr.description } : {}),
