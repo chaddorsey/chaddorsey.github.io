@@ -27,9 +27,10 @@ import { attributeGroups, attributes } from './attributeConfig.js';
  */
 
 // Build a grouped attribute map for UI rendering
+const NON_SELECTABLE_ATTRIBUTES = ['boundary', 'State', 'County'];
 const groupedAttributes = {};
 attributeGroups.forEach(group => {
-  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id);
+  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id && !NON_SELECTABLE_ATTRIBUTES.includes(attr.name));
 });
 
 // State management for attribute selector

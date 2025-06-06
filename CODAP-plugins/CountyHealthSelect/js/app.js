@@ -106,7 +106,7 @@ const DATASETS = [
     },
     {
       name: 'boundary',
-      formula: 'lookupBoundary(US_county_boundaries,County_Full)',
+      formula: 'lookupBoundary(US_county_boundaries,County + ", " + State)',
     },
     {
       name: 'Average Life Expectancy (years)',
@@ -981,19 +981,33 @@ function getAttributeByName(name) {
 function resolveAttributes(datasetSpec, attributeNames) {
   let omittedAttributeNames = datasetSpec.omittedAttributeNames || [];
   let selectedAttributeNames = datasetSpec.selectedAttributeNames;
-  
-  console.log('Resolving attributes. All attributes found in data:', attributeNames.length);
-  console.log('Selected attributes:', selectedAttributeNames ? selectedAttributeNames.length : 'none specified');
-  
+
+  // Always ensure State, County, and boundary are included
+  const coreAttributes = ['State', 'County', 'boundary'];
+  let allAttributeNames = selectedAttributeNames ? [...selectedAttributeNames] : [...attributeNames];
+  coreAttributes.forEach(attr => {
+    if (!allAttributeNames.includes(attr)) {
+      allAttributeNames.push(attr);
+    }
+  });
+
+  // Remove boundary from its current position if present
+  allAttributeNames = allAttributeNames.filter(name => name !== 'boundary');
+  // Add boundary as the last column
+  allAttributeNames.push('boundary');
+
   // Only use attributes that are either explicitly selected or not in the omitted list
-  // Make sure we only include attributes that are in both the data and the selected list
-  attributeNames = selectedAttributeNames ? 
-    selectedAttributeNames.filter(name => attributeNames.includes(name)) : 
-    attributeNames.filter(
-      function (attrName) {
-        return !omittedAttributeNames.includes(attrName);
-      });
-      
+  // Make sure we only include attributes that are in both the data and the selected list,
+  // OR are selected and have a formula in the config (for computed attributes like 'boundary')
+  attributeNames = allAttributeNames.filter(name => {
+    if (attributeNames.includes(name)) {
+      return true;
+    }
+    // If not present in data, include if it has a formula in config
+    const configAttr = getAttributeByName(name);
+    return configAttr && configAttr.formula;
+  });
+  
   console.log('Filtered attribute names:', attributeNames.length);
   
   if (attributeNames) {
@@ -1006,7 +1020,10 @@ function resolveAttributes(datasetSpec, attributeNames) {
         return {
           name: configAttr.name, // Display name for CODAP UI
           exportName, // Actual data column name for export
+          ...(configAttr.type ? { type: configAttr.type } : {}),
+          ...(configAttr.formula ? { formula: configAttr.formula } : {}),
           ...(configAttr.description ? { description: configAttr.description } : {}),
+          ...(configAttr.hidden !== undefined ? { hidden: configAttr.hidden } : {}),
           // Optionally include other metadata (formula, group, etc.) if needed
         };
       } else {
