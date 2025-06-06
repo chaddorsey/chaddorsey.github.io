@@ -295,9 +295,7 @@ function getSelectedAttributes() {
   // Add core attributes that should always be included
   const coreAttributes = [
     'State',
-    'FIPS',
     'County',
-    'County_Full',
     'boundary'
   ];
   // Combine core and selected attributes (avoiding duplicates)

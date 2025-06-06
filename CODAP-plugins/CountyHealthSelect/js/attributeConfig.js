@@ -14,9 +14,7 @@ export const attributeGroups = [
 // Attribute definitions (expand as needed)
 export const attributes = [
   { name: 'State', group: 'demographics' },
-  { name: 'FIPS', group: 'demographics' },
   { name: 'County', group: 'demographics' },
-  { name: 'County_Full', group: 'demographics', formula: 'concat(County, ", ", State)' },
   { name: 'boundary', group: 'demographics', formula: 'lookupBoundary(US_county_boundaries,County_Full)' },
   { name: 'Average Life Expectancy (years)', group: 'health', description: 'Average number of years from birth a person is expected to live' },
   { name: 'Days of Poor Physical Health (days/month)', group: 'health', description: 'Adults were asked the following question: "Thinking about your physical health, which includes physical illness and injury, for how many days during the past 30 days was your physical health not good?" The value represents the average number of days reported.' },
@@ -43,7 +41,6 @@ export const attributes = [
   // { name: 'American Indian & Alaska Native (%)', dataKey: '% American Indian or Alaska Native', group: 'demographics', description: 'Percentage of the population that identifies as American Indian or Alaska Native. Source: County Health Rankings 2025.' },
   // { name: 'Native Hawaiian / Other Pacific Islander (%)', dataKey: '% Native Hawaiian or Other Pacific Islander', group: 'demographics', description: 'Percentage of the population that identifies as Native Hawaiian or Other Pacific Islander. Source: County Health Rankings 2025.' },
   { name: 'Non-Hispanic White (%)', group: 'demographics' },
-  { name: 'Majority Minority', group: 'demographics' },
   { name: 'Population', group: 'demographics', description: 'Total number of residents.' },
   { name: 'Motor Vehicle Death Rate (deaths/100,000 people)', group: 'health', description: 'Number of deaths caused by motor vehicle crashes per 100,000 people.' },
   { name: 'Drug Overdose Death Rate (deaths/100,000 people)', group: 'health', description: 'Number of drug poisoning deaths per 100,000 people.' },
