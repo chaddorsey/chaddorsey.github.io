@@ -681,3 +681,209 @@ input[type=radio]:checked:before {
   outline: none;
   border-color: var(--teal-dark);
 }
+
+/* --- WX Dropdown/Accordion Styles (Reference UI Adaptation) --- */
+.wx-dropdown {
+  border-bottom: thin #dddddd solid;
+  margin-bottom: 0;
+  background: white;
+}
+.wx-dropdown:last-child {
+  border-bottom: none;
+}
+.wx-section-header-line.wx-dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 6px 0;
+  cursor: pointer;
+  padding: 4px 0;
+}
+.wx-section-title {
+  min-width: 102px;
+  font-weight: 600;
+  flex-basis: 75px;
+  flex-shrink: 0;
+  flex-grow: 0;
+}
+.wx-selection-count {
+  padding: 1.5px 5px;
+  border-radius: 3px;
+  background-color: var(--teal-light-25);
+  flex-basis: 16px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  text-align: center;
+  height: 16px;
+  margin-left: 8px;
+  margin-right: 8px;
+}
+.wx-user-selection {
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  color: var(--teal-dark);
+  flex-grow: 10;
+  padding: 0 6px;
+  min-width: 60px;
+}
+.wx-dropdown-indicator {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  flex-basis: 20px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.wx-dropdown-indicator::before {
+  font-family: 'icomoon';
+  font-size: 20px;
+  content: var(--icon-arrow-drop-down);
+  color: var(--teal-dark);
+}
+.wx-dropdown.wx-down > .wx-dropdown-header > .wx-dropdown-indicator {
+  transform: rotate(180deg);
+}
+.wx-dropdown-body {
+  padding: 0 12px 8px 12px;
+  overflow-y: hidden;
+  transition-property: max-height;
+  transition-duration: .5s;
+  transition-timing-function: ease-in;
+  max-height: 1000px;
+  background: white;
+}
+.wx-dropdown.wx-up .wx-dropdown-body {
+  max-height: 0;
+  padding: 0 12px;
+  overflow: hidden;
+}
+
+.wx-dropdown.wx-down .wx-dropdown-body {
+  max-height: 1000px;
+  overflow: visible;
+  padding: 0 12px 8px 12px;
+  transition: max-height 0.5s ease-in;
+}
+
+/* --- Attribute Table Styles --- */
+.attributeCheckboxes {
+  padding-bottom: 0.5em;
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+}
+.attributeCheckboxes td {
+  vertical-align: top;
+  max-height: 24px;
+  padding: 2px 6px 2px 0;
+}
+.attributeCheckboxes td:first-child {
+  max-width: 18px;
+  width: 18px;
+}
+.attributeCheckboxes th {
+  font-weight: normal;
+  text-align: left;
+  padding: 0 3px;
+}
+.attributeCheckboxes .attr-description {
+  display: inline;
+  color: #888;
+  font-size: 11px;
+  margin-left: 8px;
+}
+
+/* --- Updated Summary Area --- */
+#wx-summary-section {
+  flex-basis: 56px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin-top: 12px;
+  background: white;
+  border-top: thin solid var(--teal-light);
+}
+#wx-summary-section .summary-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+}
+.wx-status-graphic {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  flex-grow: 0;
+  flex-shrink: 0;
+  margin: 6px;
+}
+.wx-message-area {
+  color: var(--text);
+  flex-grow: 3;
+  flex-shrink: 3;
+  margin-left: 8px;
+}
+.wx-button {
+  margin: 6px;
+  padding: 6px;
+  border-radius: 3px;
+  border: solid 1px var(--teal-light);
+  background-color: white;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.wx-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Attribute Selector: Select All / Clear all header row */
+.wx-select-all-row {
+  border-top: 1px solid #ddd;
+  background: #fafbfc;
+}
+.wx-select-all-flex {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 2em;
+  padding: 0.8748em 0.5em 0.8748em 0.5em;
+  font-style: italic;
+}
+.wx-all-selected-text {
+  color: #444;
+  font-style: italic;
+}
+.wx-select-all-link {
+  color: #888;
+  font-size: 0.95em;
+  font-style: italic;
+  text-decoration: none;
+  cursor: pointer;
+}
+.wx-clear-all-link {
+  color: #888;
+  font-size: 0.95em;
+  font-style: italic;
+  text-decoration: none;
+  cursor: pointer;
+}
+.wx-select-all-row th {
+  padding: 0;
+  border-bottom: none;
+  position: relative;
+}
+
+/* Remove the custom short horizontal rules above and below the select-all row */
+.wx-select-all-row th::after,
+.wx-select-all-row th::before {
+  display: none;
+}
+
+/* Add more vertical space below the select-all row and above the attribute checkboxes */
+#demographics-attributes, #health-attributes, #environment-attributes, #education-attributes {
+  margin-top: 1.5em;
+  padding-top: 1.5em;
+}

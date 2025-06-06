@@ -19,158 +19,238 @@
 
 // Import base URL helper if needed for asset loading
 import { getBaseURL } from './app.js';
+import { nameToDescription } from './attributeDescriptions.js';
+import { attributeGroups, attributes } from './attributeConfig.js';
 
 /**
  * Manages the attribute selector UI component
  */
 
-// Define the attributes for each category
-const attributeDefinitions = {
-  health: [
-    { id: 'life-expectancy', name: 'Average Life Expectancy (years)' },
-    { id: 'poor-physical-health', name: 'Days of Poor Physical Health (days/month)' },
-    { id: 'poor-mental-health', name: 'Days of Poor Mental Health (days/month)' },
-    { id: 'primary-care-rate', name: 'Primary Care Doctor Rate (doctors/100,000)' },
-    { id: 'mental-health-providers', name: 'Mental Health Providers (providers/100,000)' },
-    { id: 'physically-inactive', name: 'Physically Inactive (%)' },
-    { id: 'smokers', name: 'Smokers (%)' },
-    { id: 'insufficient-sleep', name: 'Insufficient Sleep (%)' },
-    { id: 'drug-overdose-rate', name: 'Drug Overdose Death Rate (deaths/100,000 people)' },
-    { id: 'motor-vehicle-death-rate', name: 'Motor Vehicle Death Rate (deaths/100,000 people)' },
-    { id: 'firearm-death-rate', name: 'Firearm Death Rate (deaths/100,000 people)' },
-    { id: 'teen-birth-rate', name: 'Teen Birth Rate (births/per teens)' },
-    { id: 'limited-healthy-foods', name: 'Limited Access to Healthy Foods (%)' }
-  ],
-  environment: [
-    { id: 'air-pollution', name: 'Air Pollution (fine particulate matter in micrograms/cubic meter of air)' },
-    { id: 'rural-living', name: 'Rural Living (%)' },
-    { id: 'broadband-access', name: 'Broadband Access (%)' },
-    { id: 'severe-housing-problems', name: 'Severe Housing Problems (%)' },
-    { id: 'homeowners', name: 'Homeowners (%)' },
-    { id: 'median-household-income', name: 'Median Household Income ($)' },
-    { id: 'children-in-poverty', name: 'Children in Poverty (%)' }
-  ],
-  education: [
-    { id: 'high-school-graduation', name: 'Students Graduating from High School (%)' },
-    { id: 'some-college', name: 'Some College (%)' },
-    { id: 'proficient-in-english', name: 'Proficient in English (%)' },
-    { id: 'youth-not-in-school', name: 'Youth Not in School or Employment (%)' },
-    { id: 'juvenile-arrest-rate', name: 'Juvenile Arrest Rate (arrests/1,000 juveniles)' }
-  ]
-};
+// Build a grouped attribute map for UI rendering
+const groupedAttributes = {};
+attributeGroups.forEach(group => {
+  groupedAttributes[group.id] = attributes.filter(attr => attr.group === group.id);
+});
 
 // State management for attribute selector
 const attributeSelectorState = {
-  categories: {
-    health: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set() // Will store selected attributes
-    },
-    environment: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set()
-    },
-    education: {
-      expanded: false,
-      enabled: true,
-      allSelected: true,
-      attributes: new Set()
-    }
-  }
+  categories: {}
 };
+attributeGroups.forEach(group => {
+  attributeSelectorState.categories[group.id] = {
+    expanded: false,
+    enabled: true,
+    allSelected: true,
+    attributes: new Set(groupedAttributes[group.id].map(attr => attr.name))
+  };
+});
 
 /**
  * Initialize the attribute selector component
  */
 function initializeAttributeSelector() {
+  console.log('[DEBUG] initializeAttributeSelector called');
   // Initialize all attributes as selected
-  initializeAttributeState();
-  
-  // Generate attribute buttons
-  generateAttributeButtons();
-  
-  // Add click handlers for expansion indicators
-  document.querySelectorAll('.fe-attribute-selector .expansion-indicator').forEach(indicator => {
-    indicator.addEventListener('click', handleExpansionClick);
+  attributeGroups.forEach(group => {
+    attributeSelectorState.categories[group.id].attributes = new Set(groupedAttributes[group.id].map(attr => attr.name));
+    attributeSelectorState.categories[group.id].allSelected = true;
   });
-
-  // Add change handlers for category toggles
-  document.querySelectorAll('.fe-attribute-selector input[type="checkbox"]').forEach(checkbox => {
-    checkbox.addEventListener('change', handleCategoryToggle);
+  console.log('[DEBUG] attributeSelectorState after initialize:', JSON.stringify(attributeSelectorState));
+  // Generate checkboxes
+  generateAttributeCheckboxes();
+  // Add dropdown header click handlers
+  const headers = document.querySelectorAll('.wx-dropdown-header');
+  console.log('[DEBUG] Found', headers.length, 'dropdown headers');
+  headers.forEach(header => {
+    header.addEventListener('click', handleDropdownHeaderClick);
+    console.log('[DEBUG] Attached click handler to header:', header);
   });
+  // Initialize selection summaries and counts
+  attributeGroups.forEach(group => {
+    updateCategorySelectionSummary(group.id);
+    updateCategorySelectionCount(group.id);
+  });
+  // Update summary area
+  updateSummaryArea();
+}
 
-  // Initialize all categories as collapsed
-  document.querySelectorAll('.fe-attribute-selector .category-section').forEach(section => {
-    section.classList.remove('expanded');
+/**
+ * Generate attribute checkboxes for all categories (new UI)
+ */
+function generateAttributeCheckboxes() {
+  console.log('[DEBUG] generateAttributeCheckboxes called');
+  attributeGroups.forEach(group => {
+    const container = document.getElementById(`${group.id}-attributes`);
+    console.log(`[DEBUG] For category '${group.id}', found container:`, container);
+    const groupAttrs = groupedAttributes[group.id];
+    // Clear any existing rows
+    container.innerHTML = '';
+
+    // --- Header row with Select All and Clear all ---
+    const headerRow = document.createElement('tr');
+    headerRow.className = 'wx-select-all-row';
+    const thSelectAll = document.createElement('th');
+    thSelectAll.colSpan = 2;
+    thSelectAll.style.padding = '0';
+
+    // Flex container for right-justified links/text
+    const linkFlex = document.createElement('div');
+    linkFlex.className = 'wx-select-all-flex';
+
+    // Determine if all attributes are selected
+    const allSelected = attributeSelectorState.categories[group.id].attributes.size === groupAttrs.length;
+
+    // Select all or all-selected text/link
+    if (allSelected) {
+      const allSelectedText = document.createElement('span');
+      allSelectedText.className = 'wx-all-selected-text';
+      allSelectedText.textContent = 'All attributes selected';
+      linkFlex.appendChild(allSelectedText);
+    } else {
+      const selectAllLink = document.createElement('a');
+      selectAllLink.href = '#';
+      selectAllLink.textContent = 'Select all';
+      selectAllLink.className = 'wx-select-all-link';
+      selectAllLink.addEventListener('click', (event) => {
+        event.preventDefault();
+        groupAttrs.forEach(attr => attributeSelectorState.categories[group.id].attributes.add(attr.name));
+        generateAttributeCheckboxes();
+        updateCategorySelectionSummary(group.id);
+        updateCategorySelectionCount(group.id);
+        updateSummaryArea();
+        notifyAttributeSelectionChanged();
+      });
+      linkFlex.appendChild(selectAllLink);
+    }
+
+    // Clear all link (always shown)
+    const clearAllLink = document.createElement('a');
+    clearAllLink.href = '#';
+    clearAllLink.textContent = 'Clear all';
+    clearAllLink.className = 'wx-clear-all-link';
+    clearAllLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      attributeSelectorState.categories[group.id].attributes.clear();
+      generateAttributeCheckboxes();
+      updateCategorySelectionSummary(group.id);
+      updateCategorySelectionCount(group.id);
+      updateSummaryArea();
+      notifyAttributeSelectionChanged();
+    });
+    linkFlex.appendChild(clearAllLink);
+
+    thSelectAll.appendChild(linkFlex);
+    headerRow.appendChild(thSelectAll);
+    container.appendChild(headerRow);
+    // --- End header row ---
+
+    groupAttrs.forEach(attr => {
+      const row = document.createElement('tr');
+      // Checkbox cell
+      const tdCheckbox = document.createElement('td');
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.id = `attr-${attr.name}`;
+      checkbox.checked = attributeSelectorState.categories[group.id].attributes.has(attr.name);
+      checkbox.addEventListener('change', (event) => handleAttributeCheckboxChange(event, group.id, attr.name));
+      tdCheckbox.appendChild(checkbox);
+      // Label and description cell
+      const tdLabel = document.createElement('td');
+      const label = document.createElement('label');
+      label.htmlFor = `attr-${attr.name}`;
+      label.textContent = attr.name;
+      // Always show description below name
+      if (attr.description) {
+        const desc = document.createElement('div');
+        desc.className = 'attr-description';
+        desc.textContent = attr.description;
+        tdLabel.appendChild(label);
+        tdLabel.appendChild(desc);
+      } else {
+        tdLabel.appendChild(label);
+      }
+      row.appendChild(tdCheckbox);
+      row.appendChild(tdLabel);
+      container.appendChild(row);
+      console.log(`[DEBUG] Rendered checkbox for '${attr.name}' in category '${group.id}'`);
+    });
   });
 }
 
 /**
- * Initialize the attribute state for all categories
+ * Handle attribute checkbox change
  */
-function initializeAttributeState() {
-  // Select all attributes by default
-  for (const categoryId in attributeDefinitions) {
-    const attributes = attributeDefinitions[categoryId];
-    attributes.forEach(attr => {
-      attributeSelectorState.categories[categoryId].attributes.add(attr.id);
-    });
-    attributeSelectorState.categories[categoryId].allSelected = true;
+function handleAttributeCheckboxChange(event, categoryId, attributeId) {
+  const checked = event.target.checked;
+  if (checked) {
+    attributeSelectorState.categories[categoryId].attributes.add(attributeId);
+  } else {
+    attributeSelectorState.categories[categoryId].attributes.delete(attributeId);
+  }
+  // Always re-render the checkboxes and header to ensure correct Select all/All attributes selected logic
+  generateAttributeCheckboxes();
+  updateCategorySelectionSummary(categoryId);
+  updateCategorySelectionCount(categoryId);
+  updateSummaryArea();
+  notifyAttributeSelectionChanged();
+}
+
+/**
+ * Update the selection summary for a category
+ */
+function updateCategorySelectionSummary(categoryId) {
+  const userSelection = document.querySelector(`#${categoryId}-section .wx-user-selection`);
+  const selected = Array.from(attributeSelectorState.categories[categoryId].attributes);
+  const names = selected.map(id => {
+    const attr = groupedAttributes[categoryId].find(a => a.name === id);
+    return attr ? attr.name : id;
+  });
+  userSelection.textContent = names.slice(0, 3).join(', ') + (names.length > 3 ? ', ...' : '');
+}
+
+/**
+ * Update the selection count for a category
+ */
+function updateCategorySelectionCount(categoryId) {
+  const countSpan = document.querySelector(`#${categoryId}-section .wx-selection-count`);
+  const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
+  // Only show the selected count, not 'selected/total'
+  countSpan.textContent = `${selectedCount}`;
+}
+
+/**
+ * Update the summary area at the bottom
+ */
+function updateSummaryArea() {
+  const msg = document.querySelector('.wx-message-area');
+  const getDataButton = document.querySelector('.fe-fetch-button');
+  const hasAttributes = hasSelectedAttributes();
+  // You may want to check for state selection as well
+  if (hasAttributes) {
+    msg.textContent = 'Ready to fetch';
+    getDataButton.removeAttribute('disabled');
+  } else {
+    msg.textContent = 'Select at least one attribute';
+    getDataButton.setAttribute('disabled', 'disabled');
   }
 }
 
 /**
- * Generate attribute buttons for all categories
+ * Handle dropdown header click (expand/collapse)
  */
-function generateAttributeButtons() {
-  for (const categoryId in attributeDefinitions) {
-    const container = document.getElementById(`${categoryId}-attributes`);
-    const attributes = attributeDefinitions[categoryId];
-    
-    // Clear any existing buttons
-    container.innerHTML = '';
-    
-    // Create "All" button first
-    const allButton = document.createElement('button');
-    allButton.classList.add('attribute-button', 'all-button');
-    allButton.setAttribute('data-attribute-id', 'all');
-    allButton.setAttribute('title', 'Select all attributes');
-    
-    // Check if "All" is selected in state
-    if (attributeSelectorState.categories[categoryId].allSelected) {
-      allButton.classList.add('selected');
-    }
-    
-    allButton.textContent = 'All';
-    
-    // Add click handler
-    allButton.addEventListener('click', handleAllButtonClick);
-    
-    container.appendChild(allButton);
-    
-    // Generate button for each attribute
-    attributes.forEach(attr => {
-      const button = document.createElement('button');
-      button.classList.add('attribute-button');
-      button.setAttribute('data-attribute-id', attr.id);
-      button.setAttribute('title', attr.name);
-      
-      // Check if attribute is selected in state
-      if (attributeSelectorState.categories[categoryId].attributes.has(attr.id)) {
-        button.classList.add('selected');
-      }
-      
-      button.textContent = attr.name;
-      
-      // Add click handler
-      button.addEventListener('click', handleAttributeButtonClick);
-      
-      container.appendChild(button);
-    });
+function handleDropdownHeaderClick(event) {
+  event.stopPropagation();
+  console.log('[DEBUG] Dropdown header clicked!', event.target);
+  const dropdown = event.target.closest('.wx-dropdown');
+  console.log('[DEBUG] Closest .wx-dropdown:', dropdown);
+  if (dropdown.classList.contains('wx-up')) {
+    dropdown.classList.remove('wx-up');
+    dropdown.classList.add('wx-down');
+    console.log('[DEBUG] Toggled to wx-down:', dropdown.classList.value);
+  } else {
+    dropdown.classList.remove('wx-down');
+    dropdown.classList.add('wx-up');
+    console.log('[DEBUG] Toggled to wx-up:', dropdown.classList.value);
   }
 }
 
@@ -187,202 +267,6 @@ function notifyAttributeSelectionChanged() {
 }
 
 /**
- * Handle click on the "All" button
- * @param {Event} event - The click event
- */
-function handleAllButtonClick(event) {
-  const button = event.target;
-  const categorySection = button.closest('.category-section');
-  const categoryId = categorySection.id.replace('-section', '');
-  const attributes = attributeDefinitions[categoryId];
-  
-  // Toggle "All" selection state
-  const isAllCurrentlySelected = button.classList.contains('selected');
-  
-  if (isAllCurrentlySelected) {
-    // If All is already selected, deselect it and all attribute buttons
-    button.classList.remove('selected');
-    attributeSelectorState.categories[categoryId].allSelected = false;
-    
-    // Clear all attribute selections
-    attributeSelectorState.categories[categoryId].attributes.clear();
-    
-    // Update attribute buttons
-    const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
-    attributeButtons.forEach(attrButton => {
-      attrButton.classList.remove('selected');
-    });
-  } else {
-    // If All is not selected, select it and all attribute buttons
-    button.classList.add('selected');
-    attributeSelectorState.categories[categoryId].allSelected = true;
-    
-    // Select all attributes
-    const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
-    attributeButtons.forEach((attrButton, index) => {
-      const attributeId = attributes[index].id;
-      attrButton.classList.add('selected');
-      attributeSelectorState.categories[categoryId].attributes.add(attributeId);
-    });
-  }
-  
-  // Update attribute count display
-  updateAttributeCount(categoryId);
-  
-  // Notify attribute selection changed
-  notifyAttributeSelectionChanged();
-}
-
-/**
- * Handle click on attribute button
- * @param {Event} event - The click event
- */
-function handleAttributeButtonClick(event) {
-  const button = event.target;
-  const attributeId = button.getAttribute('data-attribute-id');
-  const categorySection = button.closest('.category-section');
-  const categoryId = categorySection.id.replace('-section', '');
-  const allButton = categorySection.querySelector('.attribute-button.all-button');
-  const attributeButtons = categorySection.querySelectorAll('.attribute-button:not(.all-button)');
-  
-  // Check current state of the button and the All button
-  const isCurrentlySelected = button.classList.contains('selected');
-  const isAllCurrentlySelected = allButton.classList.contains('selected');
-  
-  if (isAllCurrentlySelected) {
-    // If All is currently selected:
-    // 1. Deselect All button
-    // 2. Deselect all attribute buttons
-    // 3. Select only the clicked button
-    allButton.classList.remove('selected');
-    attributeSelectorState.categories[categoryId].allSelected = false;
-    
-    // Clear all existing selections
-    attributeSelectorState.categories[categoryId].attributes.clear();
-    
-    // Deselect all attribute buttons
-    attributeButtons.forEach(btn => {
-      btn.classList.remove('selected');
-    });
-    
-    // Select only the clicked button
-    button.classList.add('selected');
-    attributeSelectorState.categories[categoryId].attributes.add(attributeId);
-  } else if (isCurrentlySelected) {
-    // If the button is already selected, just deselect it
-    button.classList.remove('selected');
-    attributeSelectorState.categories[categoryId].attributes.delete(attributeId);
-  } else {
-    // If the button is not selected and All is not selected, 
-    // simply select this button (adding to existing selections)
-    button.classList.add('selected');
-    attributeSelectorState.categories[categoryId].attributes.add(attributeId);
-  }
-  
-  // Check if all attributes are now selected
-  const totalAttributes = attributeDefinitions[categoryId].length;
-  const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
-  
-  if (selectedCount === totalAttributes) {
-    // All attributes are selected, also select the "All" button
-    allButton.classList.add('selected');
-    attributeSelectorState.categories[categoryId].allSelected = true;
-  } else if (selectedCount === 0) {
-    // No attributes are selected, make sure the count shows 0
-    updateAttributeCount(categoryId);
-  }
-  
-  // Update attribute count display
-  updateAttributeCount(categoryId);
-  
-  // Notify attribute selection changed
-  notifyAttributeSelectionChanged();
-}
-
-/**
- * Update the attribute count display for a category
- * @param {string} categoryId - The category identifier
- */
-function updateAttributeCount(categoryId) {
-  const categorySection = document.getElementById(`${categoryId}-section`);
-  const countElement = categorySection.querySelector('.attribute-count');
-  
-  if (attributeSelectorState.categories[categoryId].enabled) {
-    countElement.innerHTML = 
-      `<i>${getSelectedCount(categoryId)} of ${getTotalCount(categoryId)} attributes selected</i>`;
-  } else {
-    countElement.innerHTML = `<i>No attributes included</i>`;
-  }
-}
-
-/**
- * Handle click on expansion indicator
- * @param {Event} event - The click event
- */
-function handleExpansionClick(event) {
-  const indicator = event.target;
-  const categorySection = indicator.closest('.category-section');
-  const categoryId = categorySection.id.replace('-section', '');
-  
-  // Toggle expanded state
-  const isExpanded = categorySection.classList.toggle('expanded');
-  attributeSelectorState.categories[categoryId].expanded = isExpanded;
-}
-
-/**
- * Handle category checkbox toggle
- * @param {Event} event - The change event
- */
-function handleCategoryToggle(event) {
-  const checkbox = event.target;
-  const categorySection = checkbox.closest('.category-section');
-  const categoryId = categorySection.id.replace('-section', '');
-  
-  // Update state and UI
-  attributeSelectorState.categories[categoryId].enabled = checkbox.checked;
-  
-  if (checkbox.checked) {
-    categorySection.classList.remove('disabled');
-    updateAttributeCount(categoryId);
-  } else {
-    categorySection.classList.add('disabled');
-    categorySection.querySelector('.attribute-count').innerHTML = 
-      `<i>No attributes included</i>`;
-  }
-  
-  // Notify attribute selection changed
-  notifyAttributeSelectionChanged();
-}
-
-/**
- * Get the number of selected attributes for a category
- * @param {string} categoryId - The category identifier
- * @returns {number} The count of selected attributes
- */
-function getSelectedCount(categoryId) {
-  return attributeSelectorState.categories[categoryId].attributes.size;
-}
-
-/**
- * Get the total number of attributes for a category
- * @param {string} categoryId - The category identifier
- * @returns {number} The total count of attributes
- */
-function getTotalCount(categoryId) {
-  return attributeDefinitions[categoryId]?.length || 0;
-}
-
-// Export the public interface
-export {
-  initializeAttributeSelector,
-  attributeSelectorState,
-  getSelectedAttributes,
-  getSelectedAttributesForCategory,
-  isCategoryEnabled,
-  hasSelectedAttributes
-};
-
-/**
  * Get all selected attribute names across all categories
  * @returns {string[]} Array of selected attribute names
  */
@@ -390,7 +274,7 @@ function getSelectedAttributes() {
   const selectedAttributes = [];
   
   // Iterate through all categories
-  for (const categoryId in attributeDefinitions) {
+  for (const categoryId in attributeSelectorState.categories) {
     // Skip disabled categories
     if (!attributeSelectorState.categories[categoryId].enabled) {
       console.log(`Category ${categoryId} is disabled, skipping`);
@@ -431,18 +315,18 @@ function getSelectedAttributesForCategory(categoryId) {
   
   // If "All" is selected for this category, return all attribute names
   if (attributeSelectorState.categories[categoryId].allSelected) {
-    return attributeDefinitions[categoryId].map(attr => attr.name);
+    return groupedAttributes[categoryId].map(attr => attr.name);
   }
   
   // Otherwise, map the selected IDs to names
   const selectedAttributeIds = Array.from(attributeSelectorState.categories[categoryId].attributes);
-  const attributes = attributeDefinitions[categoryId];
+  const attributes = groupedAttributes[categoryId];
   
   console.log(`Category ${categoryId}: has ${selectedAttributeIds.length} IDs selected out of ${attributes.length} total`);
   
   // Map IDs to actual attribute names
   const result = selectedAttributeIds.map(id => {
-    const attribute = attributes.find(attr => attr.id === id);
+    const attribute = attributes.find(attr => attr.name === id);
     if (!attribute) {
       console.warn(`Warning: No attribute found with ID "${id}" in category "${categoryId}"`);
       return null;
@@ -474,4 +358,14 @@ function hasSelectedAttributes() {
     }
   }
   return false;
-} 
+}
+
+// Export the public interface
+export {
+  initializeAttributeSelector,
+  attributeSelectorState,
+  getSelectedAttributes,
+  getSelectedAttributesForCategory,
+  isCategoryEnabled,
+  hasSelectedAttributes
+}; 

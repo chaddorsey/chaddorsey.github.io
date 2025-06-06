@@ -21,6 +21,7 @@
 import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
 import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
+import { attributes as attributeConfigAttributes } from './attributeConfig.js';
 
 const CURRENT_DATA_YEAR = '2025'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
@@ -961,6 +962,15 @@ function getAttributeNamesFromData(array) {
 }
 
 /**
+ * Utility: Look up attribute object by name from attributeConfig.js
+ * @param {string} name
+ * @returns {object | undefined}
+ */
+function getAttributeByName(name) {
+  return attributeConfigAttributes.find(attr => attr.name === name);
+}
+
+/**
  * CODAP API Utility that makes an array of CODAP Attribute Specs from the
  * dataset definition and the attribute names discovered in the data.
  *
@@ -988,8 +998,20 @@ function resolveAttributes(datasetSpec, attributeNames) {
   
   if (attributeNames) {
     let attributeList = attributeNames.map(function (attrName) {
-      return {name: attrName};
-    })
+      // Use the config as the source of truth for attribute metadata
+      const configAttr = getAttributeByName(attrName);
+      if (configAttr) {
+        // Always include name and description (if present)
+        return {
+          name: configAttr.name,
+          ...(configAttr.description ? { description: configAttr.description } : {}),
+          // Optionally include other metadata (formula, group, etc.) if needed
+        };
+      } else {
+        console.warn(`Attribute '${attrName}' is missing from attributeConfig.js. Exporting with name only.`);
+        return { name: attrName };
+      }
+    });
     
     if (datasetSpec.overriddenAttributes) {
       // Only include overrides for attributes we're actually using
@@ -1012,6 +1034,13 @@ function resolveAttributes(datasetSpec, attributeNames) {
       );
       attributeList = attributeList.concat(relevantAdditionalAttrs);
     }
+    
+    // Log warning if any attribute is missing a description
+    attributeList.forEach(attr => {
+      if (!attr.description) {
+        console.warn(`Attribute '${attr.name}' is missing a description in export.`);
+      }
+    });
     
     console.log('Final attribute list length:', attributeList.length);
     return attributeList;
@@ -1345,10 +1374,4 @@ function updateAttributeVisibility(datasetName, selectedAttributes) {
 // window.addEventListener('load', init);
 
 // Export the public interface
-export { 
-  initializeApp,
-  hasSelectedAttributes,
-  updateFetchButtonState,
-  getCurrentDatasetSpec,
-  getBaseURL
-};
+export { getBaseURL, initializeApp };
