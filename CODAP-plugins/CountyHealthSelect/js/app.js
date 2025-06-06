@@ -405,8 +405,8 @@ function preclearDataGroup(attributeName, value, collectionSpec, datasetName) {
 function specifyDataset(datasetName, collectionList, url) {
   const year = '2025';
   return {
-    name: `${datasetName} (${year})`,
-    title: `${datasetName} (${year})`,
+    name: datasetName, // keep as identifier
+    title: `County Health Indicators ${year}, By State`, // user-facing
     collections: collectionList,
     metadata: {
       source: url,
