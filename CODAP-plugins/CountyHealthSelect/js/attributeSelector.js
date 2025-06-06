@@ -162,7 +162,7 @@ function generateAttributeCheckboxes() {
       const tdLabel = document.createElement('td');
       const label = document.createElement('label');
       label.htmlFor = `attr-${attr.name}`;
-      label.textContent = attr.name;
+      label.textContent = attr.unit ? `${attr.name} (${attr.unit})` : attr.name;
       // Always show description below name
       if (attr.description) {
         const desc = document.createElement('div');
