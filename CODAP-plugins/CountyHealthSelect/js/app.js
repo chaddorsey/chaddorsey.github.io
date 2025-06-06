@@ -22,6 +22,7 @@ import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
 import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
 import { attributes as attributeConfigAttributes } from './attributeConfig.js';
+import { rawAttributes } from './attributeConfig.js'; // Import rawAttributes for dataKey mapping
 
 const CURRENT_DATA_YEAR = '2025'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
@@ -1271,9 +1272,14 @@ function fetchDataAndProcess() {
             // Build a mapping from display name to data key
             const selectedAttributes = datasetSpec.selectedAttributeNames.map(name => {
               const configAttr = getAttributeByName(name);
+              // Find the raw attribute with matching cleaned name
+              const rawAttr = rawAttributes.find(attr => {
+                const { name: cleanedName } = extractNameAndUnit(attr.name);
+                return cleanedName === name;
+              });
               return {
                 displayName: name,
-                dataKey: configAttr && configAttr.dataKey ? configAttr.dataKey : name
+                dataKey: rawAttr ? rawAttr.name : (configAttr && configAttr.dataKey ? configAttr.dataKey : name)
               };
             });
             // Apply attribute filtering to each data row
