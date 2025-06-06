@@ -39,6 +39,9 @@ export const attributes = [
   { name: 'Non-Hispanic Black (%)', group: 'demographics' },
   { name: 'Asian (%)', group: 'demographics' },
   { name: 'Hispanic (%)', group: 'demographics' },
+  // STUB: Not present in current data, left for future use
+  // { name: 'American Indian & Alaska Native (%)', dataKey: '% American Indian or Alaska Native', group: 'demographics', description: 'Percentage of the population that identifies as American Indian or Alaska Native. Source: County Health Rankings 2025.' },
+  // { name: 'Native Hawaiian / Other Pacific Islander (%)', dataKey: '% Native Hawaiian or Other Pacific Islander', group: 'demographics', description: 'Percentage of the population that identifies as Native Hawaiian or Other Pacific Islander. Source: County Health Rankings 2025.' },
   { name: 'Non-Hispanic White (%)', group: 'demographics' },
   { name: 'Majority Minority', group: 'demographics' },
   { name: 'Population', group: 'demographics', description: 'Total number of residents.' },

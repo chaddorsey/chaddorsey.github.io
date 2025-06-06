@@ -1001,9 +1001,11 @@ function resolveAttributes(datasetSpec, attributeNames) {
       // Use the config as the source of truth for attribute metadata
       const configAttr = getAttributeByName(attrName);
       if (configAttr) {
-        // Always include name and description (if present)
+        // Use dataKey for export if present, otherwise name
+        const exportName = configAttr.dataKey || configAttr.name;
         return {
-          name: configAttr.name,
+          name: configAttr.name, // Display name for CODAP UI
+          exportName, // Actual data column name for export
           ...(configAttr.description ? { description: configAttr.description } : {}),
           // Optionally include other metadata (formula, group, etc.) if needed
         };
@@ -1090,6 +1092,12 @@ function resolveCollectionList(datasetSpec, attributeNames) {
     console.log('Created collections:', collectionsList.length);
     console.log('Parent collection attributes:', parentCollection ? parentCollection.attrs.length : 0);
     console.log('Child collection attributes:', childCollection.attrs.length);
+    
+    // DEBUG: Print attribute names in the collection list
+    collectionsList.forEach((collection, i) => {
+      const attrNames = collection.attrs ? collection.attrs.map(a => a.name).join(', ') : 'none';
+      console.log(`Collection ${i} (${collection.name}) attributes:`, attrNames);
+    });
     
     return collectionsList;
   }
@@ -1232,7 +1240,7 @@ function fetchDataAndProcess() {
           let nData = csvToJSON(dataSet.data);
           
           // Validate and log selected attributes
-          console.log('Selected attribute names:', datasetSpec.selectedAttributeNames);
+          console.log('[DEBUG] Selected attributes at export:', datasetSpec.selectedAttributeNames);
           
           // preprocess the data
           if (datasetSpec.preprocess) {
@@ -1242,17 +1250,24 @@ function fetchDataAndProcess() {
           
           // Filter the data to only include selected attributes
           if (datasetSpec.selectedAttributeNames && datasetSpec.selectedAttributeNames.length > 0) {
+            // Build a mapping from display name to data key
+            const selectedAttributes = datasetSpec.selectedAttributeNames.map(name => {
+              const configAttr = getAttributeByName(name);
+              return {
+                displayName: name,
+                dataKey: configAttr && configAttr.dataKey ? configAttr.dataKey : name
+              };
+            });
             // Apply attribute filtering to each data row
             nData = nData.map(row => {
               const filteredRow = {};
-              datasetSpec.selectedAttributeNames.forEach(attrName => {
-                if (row.hasOwnProperty(attrName)) {
-                  filteredRow[attrName] = row[attrName];
+              selectedAttributes.forEach(attr => {
+                if (row.hasOwnProperty(attr.dataKey)) {
+                  filteredRow[attr.displayName] = row[attr.dataKey];
                 }
               });
               return filteredRow;
             });
-            
             // Log data shape after filtering
             if (nData.length > 0) {
               console.log('After attribute filtering:', 
@@ -1271,6 +1286,14 @@ function fetchDataAndProcess() {
           // create the specification of the CODAP collections
           let collectionList = resolveCollectionList(datasetSpec, availableAttributeNames);
           
+          // DEBUG: Print attribute names in the collection list
+          if (collectionList) {
+            collectionList.forEach((collection, i) => {
+              const attrNames = collection.attrs ? collection.attrs.map(a => a.name).join(', ') : 'none';
+              console.log(`Collection ${i} (${collection.name}) attributes:`, attrNames);
+            });
+          }
+
           if (collectionList) {
             // create the dataset, if needed.
             return guaranteeDataset(datasetSpec.name, collectionList, datasetSpec.documentation)
@@ -1284,6 +1307,10 @@ function fetchDataAndProcess() {
                 })
                 .then(function () {
                   ui.setTransferStatus('busy', 'Sending data to CODAP')
+                  // DEBUG: Print keys of first row of nData
+                  if (nData.length > 0) {
+                    console.log('Keys of first row sent to CODAP:', Object.keys(nData[0]));
+                  }
                   return sendItemsToCODAP(datasetSpec.name, nData);
                 })
                 // Update attribute visibility to show only selected attributes

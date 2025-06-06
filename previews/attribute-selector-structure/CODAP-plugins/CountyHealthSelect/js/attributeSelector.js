@@ -101,6 +101,7 @@ function generateAttributeCheckboxes() {
     const allSelected = attributeSelectorState.categories[group.id].attributes.size === groupAttrs.length;
 
     // Select all or all-selected text/link
+    const categoryState = attributeSelectorState.categories[group.id];
     if (allSelected) {
       const allSelectedText = document.createElement('span');
       allSelectedText.className = 'wx-all-selected-text';
@@ -113,7 +114,8 @@ function generateAttributeCheckboxes() {
       selectAllLink.className = 'wx-select-all-link';
       selectAllLink.addEventListener('click', (event) => {
         event.preventDefault();
-        groupAttrs.forEach(attr => attributeSelectorState.categories[group.id].attributes.add(attr.name));
+        groupAttrs.forEach(attr => categoryState.attributes.add(attr.name));
+        categoryState.allSelected = true;
         generateAttributeCheckboxes();
         updateCategorySelectionSummary(group.id);
         updateCategorySelectionCount(group.id);
@@ -130,7 +132,8 @@ function generateAttributeCheckboxes() {
     clearAllLink.className = 'wx-clear-all-link';
     clearAllLink.addEventListener('click', (event) => {
       event.preventDefault();
-      attributeSelectorState.categories[group.id].attributes.clear();
+      categoryState.attributes.clear();
+      categoryState.allSelected = false;
       generateAttributeCheckboxes();
       updateCategorySelectionSummary(group.id);
       updateCategorySelectionCount(group.id);
@@ -182,11 +185,16 @@ function generateAttributeCheckboxes() {
  */
 function handleAttributeCheckboxChange(event, categoryId, attributeId) {
   const checked = event.target.checked;
+  const categoryState = attributeSelectorState.categories[categoryId];
   if (checked) {
-    attributeSelectorState.categories[categoryId].attributes.add(attributeId);
+    categoryState.attributes.add(attributeId);
   } else {
-    attributeSelectorState.categories[categoryId].attributes.delete(attributeId);
+    categoryState.attributes.delete(attributeId);
   }
+  // Update allSelected flag
+  const groupAttrs = groupedAttributes[categoryId];
+  categoryState.allSelected = (categoryState.attributes.size === groupAttrs.length);
+
   // Always re-render the checkboxes and header to ensure correct Select all/All attributes selected logic
   generateAttributeCheckboxes();
   updateCategorySelectionSummary(categoryId);
@@ -272,7 +280,6 @@ function notifyAttributeSelectionChanged() {
  */
 function getSelectedAttributes() {
   const selectedAttributes = [];
-  
   // Iterate through all categories
   for (const categoryId in attributeSelectorState.categories) {
     // Skip disabled categories
@@ -280,13 +287,11 @@ function getSelectedAttributes() {
       console.log(`Category ${categoryId} is disabled, skipping`);
       continue;
     }
-    
     // Get attributes for this category
     const categoryAttributes = getSelectedAttributesForCategory(categoryId);
     console.log(`Category ${categoryId}: selected ${categoryAttributes.length} attributes`);
     selectedAttributes.push(...categoryAttributes);
   }
-  
   // Add core attributes that should always be included
   const coreAttributes = [
     'State',
@@ -295,10 +300,9 @@ function getSelectedAttributes() {
     'County_Full',
     'boundary'
   ];
-  
   // Combine core and selected attributes (avoiding duplicates)
   const finalAttributes = [...new Set([...coreAttributes, ...selectedAttributes])];
-  console.log(`Total selected attributes: ${finalAttributes.length} (${selectedAttributes.length} category attributes + ${coreAttributes.length} core attributes)`);
+  console.log(`[DEBUG] getSelectedAttributes called. Returning:`, finalAttributes);
   return finalAttributes;
 }
 
@@ -359,6 +363,10 @@ function hasSelectedAttributes() {
   }
   return false;
 }
+
+// TEMP: Expose state and getter for debugging in browser console
+window.attributeSelectorState = attributeSelectorState;
+window.getSelectedAttributes = getSelectedAttributes;
 
 // Export the public interface
 export {
