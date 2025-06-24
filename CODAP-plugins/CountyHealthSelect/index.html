@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="description"
         content="A CODAP plugin to retrieve county health ranking data for United States counties">
-  <title>County Health Rankings</title>
+  <title>County Health Rankings (2024)</title>
   <script src="lib/iframe-phone.js"></script>
   <script src="lib/CodapInterface.js"></script>
   <script src="lib/papaparse.min.js"></script>
@@ -194,9 +194,10 @@
   <div id="wx-summary-section">
     <div class="wx-section-header-line summary-options">
       <span class="wx-status-graphic"></span>
-      <span class="wx-message-area">Ready to fetch</span>
-      <button class="fe-clear-button wx-button" title="Clear Dataset in CODAP">Clear Data</button>
-      <button class="fe-fetch-button wx-button" title="Get data and send to CODAP">Add State Data</button>
+      <div class="button-group">
+        <button class="fe-clear-button wx-button" title="Clear Dataset in CODAP">Clear Data</button>
+        <button class="fe-fetch-button wx-button" title="Get data and send to CODAP">Add State Data</button>
+      </div>
     </div>
   </div>
 

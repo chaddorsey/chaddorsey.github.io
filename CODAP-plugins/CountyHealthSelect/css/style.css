@@ -887,3 +887,13 @@ input[type=radio]:checked:before {
   margin-top: 1.5em;
   padding-top: 1.5em;
 }
+
+.summary-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.button-group {
+  display: flex;
+  gap: 8px;
+}

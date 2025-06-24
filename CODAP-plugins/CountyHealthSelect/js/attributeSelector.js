@@ -71,8 +71,6 @@ function initializeAttributeSelector() {
     updateCategorySelectionSummary(group.id);
     updateCategorySelectionCount(group.id);
   });
-  // Update summary area
-  updateSummaryArea();
 }
 
 /**
@@ -120,7 +118,6 @@ function generateAttributeCheckboxes() {
         generateAttributeCheckboxes();
         updateCategorySelectionSummary(group.id);
         updateCategorySelectionCount(group.id);
-        updateSummaryArea();
         notifyAttributeSelectionChanged();
       });
       linkFlex.appendChild(selectAllLink);
@@ -138,7 +135,6 @@ function generateAttributeCheckboxes() {
       generateAttributeCheckboxes();
       updateCategorySelectionSummary(group.id);
       updateCategorySelectionCount(group.id);
-      updateSummaryArea();
       notifyAttributeSelectionChanged();
     });
     linkFlex.appendChild(clearAllLink);
@@ -200,7 +196,6 @@ function handleAttributeCheckboxChange(event, categoryId, attributeId) {
   generateAttributeCheckboxes();
   updateCategorySelectionSummary(categoryId);
   updateCategorySelectionCount(categoryId);
-  updateSummaryArea();
   notifyAttributeSelectionChanged();
 }
 
@@ -225,23 +220,6 @@ function updateCategorySelectionCount(categoryId) {
   const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
   // Only show the selected count, not 'selected/total'
   countSpan.textContent = `${selectedCount}`;
-}
-
-/**
- * Update the summary area at the bottom
- */
-function updateSummaryArea() {
-  const msg = document.querySelector('.wx-message-area');
-  const getDataButton = document.querySelector('.fe-fetch-button');
-  const hasAttributes = hasSelectedAttributes();
-  // You may want to check for state selection as well
-  if (hasAttributes) {
-    msg.textContent = 'Ready to fetch';
-    getDataButton.removeAttribute('disabled');
-  } else {
-    msg.textContent = 'Select at least one attribute';
-    getDataButton.setAttribute('disabled', 'disabled');
-  }
 }
 
 /**

@@ -25,7 +25,7 @@ import { attributes as attributeConfigAttributes } from './attributeConfig.js';
 import { rawAttributes } from './attributeConfig.js'; // Import rawAttributes for dataKey mapping
 import { extractNameAndUnit } from './attributeUtils.js';
 
-const CURRENT_DATA_YEAR = '2025'; // Define current data year
+const CURRENT_DATA_YEAR = '2024'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
 
 // Helper function to get base URL for assets
@@ -45,9 +45,9 @@ function getBaseURL() {
 const DATASETS = [
   {
     id: 'CountyHealthByState',
-    name: `County Health Indicators 2025, By State`,
+    name: `County Health Indicators 2024, By State`,
     documentation: 'https://countyhealth.org',
-    endpoint: `assets/data/2025/csv`,
+    endpoint: `assets/data/2024/csv`,
     selectedAttributeNames: [
       'State',
       'FIPS',
@@ -235,7 +235,7 @@ const DATASETS = [
       try {
         let stateCode = document.querySelector('#state-select').value;
         const basePath = getBaseURL();
-        const url = `${basePath}/assets/data/2025/csv/2025-CountyHealth-${stateCode}.csv`;
+        const url = `${basePath}/assets/data/2024/csv/2024-CountyHealth-${stateCode}.csv`;
         return url;
       } catch (error) {
         console.error('Error creating URL:', error);
@@ -403,7 +403,7 @@ function preclearDataGroup(attributeName, value, collectionSpec, datasetName) {
  * @return {{collections: [{name: string, attrs: *}], name, title}}
  */
 function specifyDataset(datasetName, collectionList, url) {
-  const year = '2025';
+  const year = '2024';
   return {
     name: datasetName, // keep as identifier
     title: `County Health Indicators ${year}, By State`, // user-facing
