@@ -41,8 +41,10 @@ attributeGroups.forEach(group => {
   attributeSelectorState.categories[group.id] = {
     expanded: false,
     enabled: true,
-    allSelected: true,
-    attributes: new Set(groupedAttributes[group.id].map(attr => attr.name))
+    allSelected: group.id === 'demographics',
+    attributes: group.id === 'demographics'
+      ? new Set(groupedAttributes[group.id].map(attr => attr.name))
+      : new Set()
   };
 });
 
@@ -51,10 +53,12 @@ attributeGroups.forEach(group => {
  */
 function initializeAttributeSelector() {
   console.log('[DEBUG] initializeAttributeSelector called');
-  // Initialize all attributes as selected
+  // Initialize only Demographics attributes as selected
   attributeGroups.forEach(group => {
-    attributeSelectorState.categories[group.id].attributes = new Set(groupedAttributes[group.id].map(attr => attr.name));
-    attributeSelectorState.categories[group.id].allSelected = true;
+    attributeSelectorState.categories[group.id].attributes = group.id === 'demographics'
+      ? new Set(groupedAttributes[group.id].map(attr => attr.name))
+      : new Set();
+    attributeSelectorState.categories[group.id].allSelected = group.id === 'demographics';
   });
   console.log('[DEBUG] attributeSelectorState after initialize:', JSON.stringify(attributeSelectorState));
   // Generate checkboxes
