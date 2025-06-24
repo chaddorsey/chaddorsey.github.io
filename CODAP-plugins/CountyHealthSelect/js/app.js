@@ -769,10 +769,16 @@ async function clearDataByName(datasetName) {
 async function clearDataHandler() {
   let currDatasetSpec = getCurrentDatasetSpec();
   if (!currDatasetSpec) {
-    ui.setTransferStatus('inactive', 'Pick a source')
+    ui.setTransferStatus('inactive', 'Pick a source');
     return Promise.reject('No source selected');
   }
-  clearData(currDatasetSpec.name);
+  try {
+    await clearDataByName(currDatasetSpec.name);
+    // Optionally, update UI or notify user of success
+  } catch (err) {
+    // Optionally, handle error
+    console.error('Failed to clear data:', err);
+  }
 }
 
 /**
@@ -1428,3 +1434,46 @@ function updateAttributeVisibility(datasetName, selectedAttributes) {
 
 // Export the public interface
 export { getBaseURL, initializeApp };
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ... existing code ...
+  const clearDataLink = document.querySelector('.clear-data-link');
+  const modal = document.getElementById('clear-data-modal');
+  const confirmBtn = modal.querySelector('.modal-confirm');
+  const cancelBtn = modal.querySelector('.modal-cancel');
+
+  function showModal() {
+    modal.classList.remove('fe-hide');
+    modal.focus();
+  }
+  function hideModal() {
+    modal.classList.add('fe-hide');
+  }
+
+  if (clearDataLink) {
+    clearDataLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      showModal();
+    });
+  }
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      hideModal();
+    });
+  }
+  if (confirmBtn) {
+    confirmBtn.addEventListener('click', async (event) => {
+      event.preventDefault();
+      hideModal();
+      await clearDataHandler();
+    });
+  }
+  // Optional: close modal on Escape key
+  modal.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      hideModal();
+    }
+  });
+  // ... existing code ...
+});
