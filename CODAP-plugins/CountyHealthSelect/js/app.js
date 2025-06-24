@@ -235,7 +235,7 @@ const DATASETS = [
       try {
         let stateCode = document.querySelector('#state-select').value;
         const basePath = getBaseURL();
-        const url = `${basePath}/assets/data/2024/csv/2024-CountyHealth-${stateCode}.csv`;
+        const url = `${basePath}/assets/data/2025/csv/2025-CountyHealth-${stateCode}.csv`;
         return url;
       } catch (error) {
         console.error('Error creating URL:', error);
@@ -1139,13 +1139,16 @@ function resolveCollectionList(datasetSpec, attributeNames) {
  */
 function csvToJSON(data) {
   let headers = data.shift();
-  return data.map(d => {
+  const result = data.map(d => {
     let out = {}
     d.forEach((v, ix) => {
       out[headers[ix]] = v;
     });
     return out;
   });
+  // Debug: Log State field values after CSV import
+  console.log('[DEBUG] State values after csvToJSON:', result.map(row => row.State));
+  return result;
 }
 
 /**
@@ -1221,6 +1224,8 @@ function preprocessData(data, preprocessActions) {
   } else if (typeof preprocessActions === "function") {
     preprocessActions(data);
   }
+  // Debug: Log State field values after preprocessing
+  console.log('[DEBUG] State values after preprocessData:', data.map(row => row.State));
   return data;
 }
 
