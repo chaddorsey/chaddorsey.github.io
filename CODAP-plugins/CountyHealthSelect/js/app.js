@@ -28,6 +28,11 @@ import { extractNameAndUnit } from './attributeUtils.js';
 const CURRENT_DATA_YEAR = '2024'; // Define current data year
 const APP_NAME = `County Health Datasets (${CURRENT_DATA_YEAR})`;
 
+console.log('[APP.JS] FILE LOADED - Version with multi-state debug logs - Time:', new Date().toISOString());
+console.log('🚨 CACHE BUSTER 🚨 Random:', Math.random());
+console.log('🚨 URGENT: If you see this, our file is loading! 🚨');
+console.log('🔧 FIXED: allCases API call should now work! 🔧');
+
 // Helper function to get base URL for assets
 function getBaseURL() {
   // Get the current script's path
@@ -672,10 +677,22 @@ function createCaseTable(datasetName, dimensions, autoscale) {
  * @return {Promise}
  */
 function sendItemsToCODAP(datasetName, data) {
+  console.log(`[sendItemsToCODAP] Sending ${data.length} items to CODAP dataset '${datasetName}'`);
+  console.log(`[sendItemsToCODAP] Sample item (first):`, JSON.stringify(data[0], null, 2));
+  console.log(`[sendItemsToCODAP] All attributes in first item:`, Object.keys(data[0]));
+  
   return codapInterface.sendRequest({
     action: 'create',
-    resource: `dataContext[${datasetName}].item`,
+    resource: 'dataContext[' + datasetName + '].item',
     values: data
+  }).then(function(result) {
+    console.log(`[sendItemsToCODAP] CODAP response:`, result);
+    if (!result.success) {
+      console.error(`[sendItemsToCODAP] Failed to send data:`, result);
+    } else {
+      console.log(`[sendItemsToCODAP] Successfully sent ${data.length} items to CODAP`);
+    }
+    return result;
   });
 }
 
@@ -703,23 +720,26 @@ function setBusy(isBusy) {
  * CODAP.
  */
 function fetchHandler(/*ev*/) {
-  if (!isInFetch)
-  setBusy(true);
-  fetchDataAndProcess().then(
-      function (result) {
-        if (result && !result.success) {
-          ui.setTransferStatus('failure',
-              `Import to CODAP failed. ${result.values.error}`)
-        } else if (result && result.success) {
-          ui.setTransferStatus('success', 'Ready')
+  console.log('[fetchHandler] BUTTON CLICKED - About to call fetchDataAndProcess');
+  if (!isInFetch) {
+    setBusy(true);
+    console.log('[fetchHandler] Calling fetchDataAndProcess...');
+    fetchDataAndProcess().then(
+        function (result) {
+          if (result && !result.success) {
+            ui.setTransferStatus('failure',
+                `Import to CODAP failed. ${result.values.error}`)
+          } else if (result && result.success) {
+            ui.setTransferStatus('success', 'Ready')
+          }
+          setBusy(false)
+        },
+        function (err) {
+          ui.setTransferStatus('failure', err)
+          setBusy(false)
         }
-        setBusy(false)
-      },
-      function (err) {
-        ui.setTransferStatus('failure', err)
-        setBusy(false)
-      }
-  );
+    );
+  }
 }
 
 /**
@@ -900,9 +920,17 @@ function createUI() {
   let getDataButton = document.querySelector('.fe-fetch-button');
   if (getDataButton) {
     console.log('Found fetch button:', getDataButton);
+    console.log('🔍 Button event listeners before adding:', getDataButton.getEventListeners?.() || 'getEventListeners not available');
+    
+    // Remove any existing event listeners that might conflict
+    let newButton = getDataButton.cloneNode(true);
+    getDataButton.parentNode.replaceChild(newButton, getDataButton);
+    getDataButton = newButton;
+    console.log('🔄 Replaced button to remove existing listeners');
     
     // Handle fetch button click
     getDataButton.addEventListener('click', function(ev) {
+      console.log('🚨 OUR NEW FETCH HANDLER CALLED! 🚨');
       console.log('Fetch button clicked');
       ev.preventDefault();
       ev.stopPropagation();
@@ -917,6 +945,7 @@ function createUI() {
         });
       }
     });
+    console.log('✅ Added NEW event listener to fetch button');
   } else {
     console.error('Fetch button not found');
   }
@@ -1230,157 +1259,555 @@ function preprocessData(data, preprocessActions) {
 }
 
 /**
- * Fetches data from the selected dataset and sends it to CODAP.
- * @return {Promise<Response>}
+ * Utility: Get current attributes from CODAP
+ * @param datasetName {string}
+ * @return {Promise<string[]>}
  */
-function fetchDataAndProcess() {
+async function getCurrentAttributesFromCODAP(datasetName) {
+  try {
+    // First ask CODAP for the data context so we can discover the correct collection
+    const dcResult = await codapInterface.sendRequest({
+      action: 'get',
+      resource: `dataContext[${datasetName}]`
+    });
+
+    if (!dcResult.success || !dcResult.values || !Array.isArray(dcResult.values.collections)) {
+      console.warn(`[getCurrentAttributesFromCODAP] Failed to get collections for '${datasetName}'`, dcResult);
+      return [];
+    }
+
+    // Pick the collection that has the most attributes (leaf collection)
+    const collections = dcResult.values.collections;
+    let targetCollection = collections[0];
+    if (collections.length > 1) {
+      targetCollection = collections.reduce((max, current) =>
+        current.attrs.length > max.attrs.length ? current : max
+      );
+    }
+
+    // Now request the attribute list from that collection
+    const attrResult = await codapInterface.sendRequest({
+      action: 'get',
+      resource: `dataContext[${datasetName}].collection[${targetCollection.name}].attributeList`
+    });
+
+    if (attrResult.success && Array.isArray(attrResult.values)) {
+      const names = attrResult.values.map(a => a.name);
+      console.log(`[getCurrentAttributesFromCODAP] Found ${names.length} attributes in collection '${targetCollection.name}':`, names);
+      return names;
+    }
+
+    console.warn(`[getCurrentAttributesFromCODAP] Attribute request failed for collection '${targetCollection.name}'`, attrResult);
+    return [];
+
+  } catch (err) {
+    console.error('[getCurrentAttributesFromCODAP] Error:', err);
+    return [];
+  }
+}
+
+/**
+ * Utility: Get all cases from CODAP
+ * @param datasetName {string}
+ * @return {Promise<string[]>}
+ */
+async function getCurrentCasesFromCODAP(datasetName) {
+  const result = await codapInterface.sendRequest({
+    action: 'get',
+    resource: `dataContext[${datasetName}].collection[groups].caseList`
+  });
+  if (result.success && result.values) {
+    return result.values.map(c => c.values.State);
+  }
+  return [];
+}
+
+/**
+ * Utility: Add new attributes to CODAP
+ * @param datasetName {string}
+ * @param newAttributes {string[]}
+ * @return {Promise}
+ */
+async function addNewAttributesToCODAP(datasetName, newAttributes) {
+  for (const attr of newAttributes) {
+    await codapInterface.sendRequest({
+      action: 'create',
+      resource: `dataContext[${datasetName}].collection[groups].attribute`,
+      values: { name: attr }
+    });
+  }
+}
+
+/**
+ * Utility: Update a case in CODAP
+ * @param datasetName {string}
+ * @param caseID {string}
+ * @param values {object}
+ * @return {Promise}
+ */
+async function updateCaseInCODAP(datasetName, caseID, values) {
+  // Get the correct collection name
+  const datasetResult = await codapInterface.sendRequest({
+    action: 'get',
+    resource: `dataContext[${datasetName}]`
+  });
+  
+  if (!datasetResult.success || !datasetResult.values || !datasetResult.values.collections) {
+    throw new Error('Failed to get dataset collections for update');
+  }
+  
+  const collections = datasetResult.values.collections;
+  let targetCollection = collections[0];
+  if (collections.length > 1) {
+    targetCollection = collections.reduce((max, current) => 
+      current.attrs.length > max.attrs.length ? current : max
+    );
+  }
+  
+  await codapInterface.sendRequest({
+    action: 'update',
+    resource: `dataContext[${datasetName}].collection[${targetCollection.name}].case[${caseID}]`,
+    values
+  });
+}
+
+/**
+ * Utility: Add a new case to CODAP
+ * @param datasetName {string}
+ * @param values {object}
+ * @return {Promise}
+ */
+async function addCaseToCODAP(datasetName, values) {
+  // CODAP requires a valid parent case when directly creating a case in a child
+  // collection of a hierarchical data context. Supplying the wrong (or undefined)
+  // parent results in the warning "Cannot create case with invalid or deleted
+  // parent: undefined". The simplest, most reliable way to add a new case to the
+  // *leaf* collection is to create an *item* at the data-context level—CODAP will
+  // then take care of inserting it into the correct collection hierarchy,
+  // automatically creating the parent state case if it does not yet exist. This
+  // mirrors what `sendItemsToCODAP` does during an initial bulk import.
+
+  await codapInterface.sendRequest({
+    action: 'create',
+    resource: `dataContext[${datasetName}].item`,
+    values: [values]   // API expects an array of item objects
+  });
+}
+
+/**
+ * Utility: Get case IDs and values
+ * @param datasetName {string}
+ * @return {Promise<{id: string, values: object}[]>}
+ */
+async function getCaseIDsAndValues(datasetName) {
+  console.log(`[getCaseIDsAndValues] Starting for dataset: ${datasetName}`);
+  
+  try {
+    // First get the dataset info to find the correct collection name
+    console.log(`[getCaseIDsAndValues] Getting dataset info...`);
+    const datasetResult = await codapInterface.sendRequest({
+      action: 'get',
+      resource: `dataContext[${datasetName}]`
+    });
+    
+    console.log(`[getCaseIDsAndValues] Dataset request result:`, datasetResult);
+    
+    if (!datasetResult.success) {
+      console.log(`[getCaseIDsAndValues] Dataset request failed:`, datasetResult);
+      return [];
+    }
+    
+    if (!datasetResult.values) {
+      console.log(`[getCaseIDsAndValues] No dataset values found`);
+      return [];
+    }
+    
+    if (!datasetResult.values.collections) {
+      console.log(`[getCaseIDsAndValues] No collections found in dataset`);
+      return [];
+    }
+    
+    // Find the collection that contains the actual case data (not the parent state collection)
+    // This is typically the collection with the most attributes
+    const collections = datasetResult.values.collections;
+    console.log(`[getCaseIDsAndValues] Found ${collections.length} collections:`, collections.map(c => `${c.name} (${c.attrs.length} attrs)`));
+    
+    let targetCollection = collections[0]; // fallback
+    if (collections.length > 1) {
+      // Find collection with most attributes (likely the main data collection)
+      targetCollection = collections.reduce((max, current) => 
+        current.attrs.length > max.attrs.length ? current : max
+      );
+    }
+    
+    console.log(`[getCaseIDsAndValues] Using collection '${targetCollection.name}' with ${targetCollection.attrs.length} attributes`);
+    
+    console.log(`[getCaseIDsAndValues] Getting case list from collection...`);
+    const result = await codapInterface.sendRequest({
+      action: 'get',
+      resource: `dataContext[${datasetName}].collection[${targetCollection.name}].allCases`
+    });
+    
+    console.log(`[getCaseIDsAndValues] Case list request result:`, result);
+    
+    if (result.success && result.values) {
+      // CODAP returns {cases:[...]}, {caseList:[...]}, or {items:[...]} depending on version
+      console.log('[getCaseIDsAndValues] Raw values object keys:', Object.keys(result.values));
+      let casesArray = [];
+      if (Array.isArray(result.values)) {
+        casesArray = result.values;
+      } else if (Array.isArray(result.values.cases)) {
+        casesArray = result.values.cases;
+      } else if (Array.isArray(result.values.caseList)) {
+        casesArray = result.values.caseList;
+      } else if (Array.isArray(result.values.items)) {
+        casesArray = result.values.items; // fallback
+      }
+
+      console.log(`[getCaseIDsAndValues] Parsed ${casesArray.length} existing cases from CODAP response`);
+      if (casesArray.length > 0) {
+        console.log(`[getCaseIDsAndValues] Sample case:`, casesArray[0]);
+      }
+      // Normalize each entry to have id + values even if wrapped in {case: {...}}
+      const normalized = casesArray.map(c => {
+        const inner = c.case ? c.case : c; // unwrap if needed
+        return { id: inner.id, values: inner.values };
+      });
+      return normalized;
+    }
+    
+    console.log('[getCaseIDsAndValues] No cases found or request failed:', result);
+    return [];
+    
+  } catch (error) {
+    console.error('[getCaseIDsAndValues] Error occurred:', error);
+    return [];
+  }
+}
+
+/**
+ * Enhanced data fetching and processing with consistent attribute population
+ * @return {Promise}
+ */
+async function fetchDataAndProcess() {
+  console.log('[fetchDataAndProcess] FUNCTION CALLED - Starting execution');
   let datasetSpec = getCurrentDatasetSpec();
-  console.log('Fetching data with dataset spec:', datasetSpec);
+  console.log('[fetchDataAndProcess] Got datasetSpec:', datasetSpec);
+  const datasetName = datasetSpec.name;
+  console.log('[fetchDataAndProcess] Dataset name:', datasetName);
+  
   if (!datasetSpec) {
-    ui.setTransferStatus('inactive', 'Pick a source')
+    console.log('[fetchDataAndProcess] No datasetSpec - returning');
+    ui.setTransferStatus('inactive', 'Pick a source');
     return Promise.reject('No source selected');
   }
 
-  // fetch the data
   try {
-    if (typeof datasetSpec.makeURL !== 'function') {
-      console.error('makeURL is not a function:', datasetSpec.makeURL);
-      ui.setTransferStatus('error', 'Configuration error: makeURL is not a function');
-      return Promise.reject('Configuration error: makeURL is not a function');
+    console.log('[fetchDataAndProcess] Setting transfer status to active');
+    ui.setTransferStatus('active', 'Processing data...');
+    
+    // Phase 1: Get current state from CODAP
+    console.log('[Phase 1] Getting current CODAP state...');
+    const selectedAttributes = getSelectedAttributes();
+    const currentAttributes = await getCurrentAttributesFromCODAP(datasetName);
+    const currentCases = await getCaseIDsAndValues(datasetName);
+    
+    console.log('[Phase 1] Selected attributes:', selectedAttributes);
+    console.log('[Phase 1] Current CODAP attributes:', currentAttributes);
+    console.log('[Phase 1] Current cases count:', currentCases.length);
+    console.log('[Phase 1] Current cases (first 3):', currentCases.slice(0, 3));
+
+    // Phase 2: Determine complete attribute set and states
+    console.log('[Phase 2] Computing full attribute and state sets...');
+    
+    // Always include core attributes
+    const coreAttributes = ['State', 'County', 'FIPS', 'County_Full', 'boundary'];
+    const fullAttributeSet = Array.from(new Set([
+      ...coreAttributes,
+      ...currentAttributes,
+      ...selectedAttributes
+    ]));
+    
+    console.log('[Phase 2] Full attribute set:', fullAttributeSet);
+
+    // Get all states that should be in the final dataset
+    const allStates = new Set();
+    currentCases.forEach(c => {
+      if (c.values.State) allStates.add(c.values.State);
+    });
+    
+    // Add the newly selected state if not already present
+    const stateSelect = document.querySelector('#state-select');
+    const newStateCode = stateSelect ? stateSelect.value : null;
+    if (newStateCode && !allStates.has(newStateCode)) {
+      allStates.add(newStateCode);
     }
     
-    let url = datasetSpec.makeURL();
-    console.log('Fetching from URL:', url);
-    
-    if (!url) { 
-      ui.setTransferStatus('error', 'Invalid URL');
-      return Promise.reject("Invalid URL"); 
+    console.log('[Phase 2] All states to process:', Array.from(allStates));
+
+    // Phase 3: Ensure dataset structure is ready
+    console.log('[Phase 3] Ensuring dataset structure...');
+    const initialAttributes = fullAttributeSet.length > 0 ? fullAttributeSet : ['State', 'County'];
+    let collectionList = resolveCollectionList(datasetSpec, initialAttributes);
+    await guaranteeDataset(datasetName, collectionList, datasetSpec.documentation);
+
+    // Add any completely new attributes to CODAP
+    const newAttributes = fullAttributeSet.filter(attr => !currentAttributes.includes(attr));
+    if (newAttributes.length > 0) {
+      console.log('[Phase 3] Adding new attributes to CODAP:', newAttributes);
+      await addNewAttributesToCODAP(datasetName, newAttributes);
     }
+
+    // Phase 4: Build comprehensive dataset from all states
+    console.log('[Phase 4] Fetching and consolidating data from all states...');
+    const masterDataMap = new Map(); // Key: 'State||County', Value: complete attribute object
     
-    let headers = new Headers();
-    if (datasetSpec.apiToken) {
-      headers.append('X-App-Token', datasetSpec.apiToken);
+    for (const state of allStates) {
+      console.log(`[Phase 4] Fetching data for state: ${state}`);
+      const stateData = await fetchStateDataRobust(state, fullAttributeSet, datasetSpec);
+      
+      stateData.forEach(countyRow => {
+        const key = `${countyRow.State}||${countyRow.County}`;
+        
+        // Merge with existing data if present, or create new entry
+        if (masterDataMap.has(key)) {
+          const existing = masterDataMap.get(key);
+          // Update with new values, keeping existing ones for attributes not in current fetch
+          fullAttributeSet.forEach(attr => {
+            if (countyRow[attr] !== undefined && countyRow[attr] !== null && countyRow[attr] !== '') {
+              existing[attr] = countyRow[attr];
+            } else if (!(attr in existing)) {
+              // Set to null if not previously set and not available in CSV
+              existing[attr] = null;
+            }
+          });
+        } else {
+          // Create new complete row
+          const completeRow = {};
+          fullAttributeSet.forEach(attr => {
+            completeRow[attr] = countyRow[attr] !== undefined ? countyRow[attr] : null;
+          });
+          masterDataMap.set(key, completeRow);
+        }
+      });
     }
-    
-    ui.setTransferStatus('busy', `Fetching data...`)
-    
-    return fetch(url, {headers: headers}).then(function (response) {
-      if (response.ok) {
-        ui.setTransferStatus('busy', 'Converting...')
-        return response.text().then(function (data) {
-          let dataSet = Papa.parse(data, {skipEmptyLines: true});
-          let nData = csvToJSON(dataSet.data);
-          
-          // Validate and log selected attributes
-          console.log('[DEBUG] Selected attributes at export:', datasetSpec.selectedAttributeNames);
-          
-          // preprocess the data
-          if (datasetSpec.preprocess) {
-            nData = preprocessData(nData, datasetSpec.preprocess);
-            console.log('After preprocess step:', nData.length, 'rows');
+
+    console.log(`[Phase 4] Master dataset contains ${masterDataMap.size} counties`);
+
+    // Phase 5: Synchronize with CODAP
+    console.log('[Phase 5] Synchronizing data with CODAP...');
+    const caseLookup = new Map();
+    currentCases.forEach(c => {
+      const key = `${c.values.State}||${c.values.County}`;
+      caseLookup.set(key, c);
+    });
+
+    let updatedCount = 0;
+    let addedCount = 0;
+
+    if (currentCases.length === 0) {
+      // No existing cases - batch add all data
+      console.log('[Phase 5] No existing cases - batch adding all data');
+      const allCasesArray = Array.from(masterDataMap.values());
+      console.log('[Phase 5] Sample of data being sent to CODAP (first case):', allCasesArray[0]);
+      console.log('[Phase 5] Attributes with data in first case:', Object.keys(allCasesArray[0]).filter(key => allCasesArray[0][key] !== null && allCasesArray[0][key] !== undefined && allCasesArray[0][key] !== ''));
+      await sendItemsToCODAP(datasetName, allCasesArray);
+      addedCount = allCasesArray.length;
+    } else {
+      // Update existing cases and add new ones
+      for (const [key, completeData] of masterDataMap) {
+        const existingCase = caseLookup.get(key);
+        
+        if (existingCase) {
+          // Debug: Log detailed comparison for first few cases
+          if (updatedCount < 3) {
+            console.log(`[Phase 5] Examining existing case ${key}:`);
+            console.log(`[Phase 5]   Existing data:`, existingCase.values);
+            console.log(`[Phase 5]   Complete new data:`, completeData);
+            console.log(`[Phase 5]   Attributes in complete data:`, Object.keys(completeData));
+            console.log(`[Phase 5]   Attributes in existing:`, Object.keys(existingCase.values));
           }
           
-          // Filter the data to only include selected attributes
-          if (datasetSpec.selectedAttributeNames && datasetSpec.selectedAttributeNames.length > 0) {
-            // Build a mapping from display name to data key
-            const selectedAttributes = datasetSpec.selectedAttributeNames.map(name => {
-              const configAttr = getAttributeByName(name);
-              // Find the raw attribute with matching cleaned name
-              const rawAttr = rawAttributes.find(attr => {
-                const { name: cleanedName } = extractNameAndUnit(attr.name);
-                return cleanedName === name;
-              });
-              return {
-                displayName: name,
-                dataKey: rawAttr ? rawAttr.name : (configAttr && configAttr.dataKey ? configAttr.dataKey : name)
-              };
-            });
-            // Apply attribute filtering to each data row
-            nData = nData.map(row => {
-              const filteredRow = {};
-              selectedAttributes.forEach(attr => {
-                if (row.hasOwnProperty(attr.dataKey)) {
-                  filteredRow[attr.displayName] = row[attr.dataKey];
-                }
-              });
-              return filteredRow;
-            });
-            // Log data shape after filtering
-            if (nData.length > 0) {
-              console.log('After attribute filtering:', 
-                Object.keys(nData[0]).length, 'columns,', 
-                nData.length, 'rows');
-              console.log('Filtered columns:', Object.keys(nData[0]));
+          // Check if update is needed
+          let needsUpdate = false;
+          const differences = [];
+          for (const attr of fullAttributeSet) {
+            const existingValue = existingCase.values[attr];
+            const newValue = completeData[attr];
+            if (existingValue !== newValue) {
+              needsUpdate = true;
+              differences.push(`${attr}: '${existingValue}' -> '${newValue}'`);
             }
           }
           
-          // Only use the attribute names that are actually in the filtered data
-          let availableAttributeNames = nData.length > 0 ? 
-            getAttributeNamesFromData(nData) : [];
-          
-          console.log('Available attributes in filtered data:', availableAttributeNames);
-          
-          // create the specification of the CODAP collections
-          let collectionList = resolveCollectionList(datasetSpec, availableAttributeNames);
-          
-          // DEBUG: Print attribute names in the collection list
-          if (collectionList) {
-            collectionList.forEach((collection, i) => {
-              const attrNames = collection.attrs ? collection.attrs.map(a => a.name).join(', ') : 'none';
-              console.log(`Collection ${i} (${collection.name}) attributes:`, attrNames);
-            });
+          if (needsUpdate) {
+            if (updatedCount < 3) {
+              console.log(`[Phase 5] Update needed for ${key}. Differences:`, differences);
+            }
+            console.log(`[Phase 5] Updating case: ${key}`);
+            await updateCaseInCODAP(datasetName, existingCase.id, completeData);
+            updatedCount++;
+          } else {
+            if (updatedCount < 3) {
+              console.log(`[Phase 5] No update needed for ${key} - all attributes match`);
+            }
           }
-
-          if (collectionList) {
-            // create the dataset, if needed.
-            return guaranteeDataset(datasetSpec.name, collectionList, datasetSpec.documentation)
-                // send the data
-                .then(function () {
-                  if (datasetSpec.preclear) {
-                    let matchValue = document.querySelector(datasetSpec.preclear.selector).value;
-                    return preclearDataGroup(datasetSpec.preclear.key, matchValue, collectionList, datasetSpec.name);
-                  }
-                  else return Promise.resolve();
-                })
-                .then(function () {
-                  ui.setTransferStatus('busy', 'Sending data to CODAP')
-                  // DEBUG: Print keys of first row of nData
-                  if (nData.length > 0) {
-                    console.log('Keys of first row sent to CODAP:', Object.keys(nData[0]));
-                  }
-                  return sendItemsToCODAP(datasetSpec.name, nData);
-                })
-                // Update attribute visibility to show only selected attributes
-                .then(function() {
-                  ui.setTransferStatus('busy', 'Updating attribute visibility');
-                  return updateAttributeVisibility(datasetSpec.name, datasetSpec.selectedAttributeNames);
-                })
-                // create a Case Table Component to show the data
-                .then(function () {
-                  ui.setTransferStatus('busy', 'creating a case table')
-                  let dimensions = datasetSpec.caseTableDimensions || undefined;
-                  return createCaseTable(datasetSpec.name, dimensions);
-                })
-                .then(function () {
-                  ui.setTransferStatus('success', 'Ready')
-                  if (datasetSpec.postprocess) {
-                    datasetSpec.postprocess(datasetSpec);
-                  }
-                });
-          }
-          else {
-            return Promise.reject('Data processing resulted in no valid collections');
-          }
-        });
-      } else {
-        return Promise.reject(response.statusText);
+        } else {
+          // Add new case
+          console.log(`[Phase 5] Adding new case: ${key}`);
+          await addCaseToCODAP(datasetName, completeData);
+          addedCount++;
+        }
       }
-    });
+    }
+
+    console.log(`[Phase 5] Synchronization complete - Updated: ${updatedCount}, Added: ${addedCount}`);
+
+    // Phase 6: Finalize
+    console.log('[Phase 6] Finalizing...');
+    
+    // Update attribute visibility
+    await updateAttributeVisibility(datasetName, selectedAttributes);
+    
+    // Show case table
+    let dimensions = datasetSpec.caseTableDimensions || undefined;
+    await createCaseTable(datasetName, dimensions);
+    
+    ui.setTransferStatus('success', `Ready - Processed ${allStates.size} states with ${fullAttributeSet.length} attributes`);
+    
   } catch (error) {
     console.error('Error in fetchDataAndProcess:', error);
-    ui.setTransferStatus('error', 'An error occurred while fetching data');
-    return Promise.reject('An error occurred while fetching data');
+    ui.setTransferStatus('error', 'Data processing failed');
+    throw error;
   }
+}
+
+/**
+ * Robust state data fetching with improved attribute mapping
+ * @param {string} stateCode 
+ * @param {string[]} attributeNames 
+ * @param {object} datasetSpec 
+ * @returns {Promise<object[]>}
+ */
+async function fetchStateDataRobust(stateCode, attributeNames, datasetSpec) {
+  try {
+    const url = datasetSpec.makeURL ? datasetSpec.makeURL(stateCode) : null;
+    if (!url) {
+      console.warn(`No URL available for state: ${stateCode}`);
+      return [];
+    }
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      console.warn(`Failed to fetch data for state ${stateCode}: ${response.status}`);
+      return [];
+    }
+
+    const csvText = await response.text();
+    let parsedData = Papa.parse(csvText, { skipEmptyLines: true });
+    let jsonData = csvToJSON(parsedData.data);
+
+    if (datasetSpec.preprocess) {
+      jsonData = preprocessData(jsonData, datasetSpec.preprocess);
+    }
+
+    // Build robust attribute mapping
+    const attributeMapping = buildAttributeMapping(attributeNames);
+    console.log(`[fetchStateDataRobust] State ${stateCode} - Attribute mapping:`, attributeMapping);
+
+    // Debug: Log available CSV columns for this state
+    if (jsonData.length > 0) {
+      console.log(`[fetchStateDataRobust] State ${stateCode} - Available CSV columns:`, Object.keys(jsonData[0]));
+    }
+
+    // Transform data using the mapping
+    return jsonData.map((csvRow, index) => {
+      const transformedRow = {};
+      
+      // Debug: Log detailed processing for first row
+      if (index === 0) {
+        console.log(`[fetchStateDataRobust] State ${stateCode} - Processing first row with ${attributeNames.length} attributes`);
+        console.log(`[fetchStateDataRobust] State ${stateCode} - Attribute names to process:`, attributeNames);
+      }
+      
+      attributeNames.forEach(displayName => {
+        const csvColumnName = attributeMapping[displayName];
+        
+        if (index === 0) {
+          console.log(`[fetchStateDataRobust] State ${stateCode} - Processing '${displayName}' -> '${csvColumnName}' | Has column: ${csvRow.hasOwnProperty(csvColumnName)} | Value: ${csvRow[csvColumnName]}`);
+        }
+        
+        if (csvColumnName && csvRow.hasOwnProperty(csvColumnName)) {
+          transformedRow[displayName] = csvRow[csvColumnName];
+        } else {
+          // Attribute not available in this state's CSV
+          transformedRow[displayName] = null;
+          
+          // Only log missing attributes that aren't core computed attributes
+          if (!['boundary', 'County_Full'].includes(displayName)) {
+            console.log(`[fetchStateDataRobust] State ${stateCode} - Missing data for attribute '${displayName}' (looking for CSV column '${csvColumnName}')`);
+          }
+        }
+      });
+
+      // Debug: Log the first transformed row to see what data we're actually creating
+      if (index === 0) {
+        console.log(`[fetchStateDataRobust] State ${stateCode} - First transformed row:`, transformedRow);
+        console.log(`[fetchStateDataRobust] State ${stateCode} - Sample CSV row keys and values:`, Object.keys(csvRow).slice(0, 10), 'Sample values:', Object.values(csvRow).slice(0, 5));
+      }
+
+      return transformedRow;
+    });
+
+  } catch (error) {
+    console.error(`Error fetching data for state ${stateCode}:`, error);
+    return [];
+  }
+}
+
+/**
+ * Build consistent mapping from display attribute names to CSV column names
+ * @param {string[]} attributeNames 
+ * @returns {object} Mapping object
+ */
+function buildAttributeMapping(attributeNames) {
+  const mapping = {};
+  
+  console.log(`[buildAttributeMapping] Processing ${attributeNames.length} attributes:`, attributeNames);
+  
+  attributeNames.forEach(displayName => {
+    // First check if we have a config entry for this attribute
+    const configAttr = getAttributeByName(displayName);
+    console.log(`[buildAttributeMapping] Looking up '${displayName}' in config:`, configAttr);
+    
+    if (configAttr && configAttr.dataKey) {
+      // Use the dataKey from config as the CSV column name
+      mapping[displayName] = configAttr.dataKey;
+      console.log(`[buildAttributeMapping] '${displayName}' -> '${configAttr.dataKey}' (via dataKey)`);
+    } else if (configAttr && configAttr.unit) {
+      // Construct from name + unit
+      const constructed = `${configAttr.name} (${configAttr.unit})`;
+      mapping[displayName] = constructed;
+      console.log(`[buildAttributeMapping] '${displayName}' -> '${constructed}' (via name + unit)`);
+    } else if (configAttr && configAttr.name) {
+      // Use the config name
+      mapping[displayName] = configAttr.name;
+      console.log(`[buildAttributeMapping] '${displayName}' -> '${configAttr.name}' (via config name)`);
+    } else {
+      // Fallback to the display name itself
+      mapping[displayName] = displayName;
+      console.log(`[buildAttributeMapping] '${displayName}' -> '${displayName}' (fallback - no config found)`);
+    }
+  });
+  
+  // Debug: Log each mapping entry explicitly to ensure all are present
+  console.log(`[buildAttributeMapping] Mapping entries created:`, Object.keys(mapping).length);
+  Object.entries(mapping).forEach(([key, value]) => {
+    console.log(`[buildAttributeMapping]   ${key} => ${value}`);
+  });
+  
+  console.log(`[buildAttributeMapping] Final mapping object:`, JSON.stringify(mapping, null, 2));
+  return mapping;
 }
 
 /**
@@ -1391,7 +1818,8 @@ function fetchDataAndProcess() {
  * @returns {Promise} - Promise resolving when visibility updates are complete
  */
 function updateAttributeVisibility(datasetName, selectedAttributes) {
-  console.log('Updating attribute visibility in CODAP');
+  console.log(`[updateAttributeVisibility] Updating attribute visibility in CODAP for dataset: ${datasetName}`);
+  console.log(`[updateAttributeVisibility] Selected attributes to make visible:`, selectedAttributes);
   
   // First get all collections in dataset
   return codapInterface.sendRequest({
@@ -1404,14 +1832,21 @@ function updateAttributeVisibility(datasetName, selectedAttributes) {
     }
     
     const collections = result.values.collections;
+    console.log(`[updateAttributeVisibility] Found ${collections.length} collections in CODAP`);
+    
     const visibilityRequests = [];
     
     // For each collection, only make sure that selected attributes are visible
     // Never hide attributes that might contain data from previous requests
-    collections.forEach(collection => {
+    collections.forEach((collection, collectionIndex) => {
+      console.log(`[updateAttributeVisibility] Collection ${collectionIndex} (${collection.name}) has ${collection.attrs.length} attributes`);
+      
       collection.attrs.forEach(attr => {
+        console.log(`[updateAttributeVisibility]   Attribute: ${attr.name} | Hidden: ${attr.hidden} | In selected: ${selectedAttributes.includes(attr.name)}`);
+        
         // Only make hidden attributes visible if they're in our current selection
         if (attr.hidden && selectedAttributes.includes(attr.name)) {
+          console.log(`[updateAttributeVisibility]   -> Adding visibility request for ${attr.name}`);
           visibilityRequests.push({
             action: 'update',
             resource: `dataContext[${datasetName}].collection[${collection.name}].attribute[${attr.name}]`,
@@ -1423,7 +1858,7 @@ function updateAttributeVisibility(datasetName, selectedAttributes) {
       });
     });
     
-    console.log(`Sending ${visibilityRequests.length} visibility update requests`);
+    console.log(`[updateAttributeVisibility] Sending ${visibilityRequests.length} visibility update requests`);
     
     // Send all visibility updates in sequence
     return visibilityRequests.reduce(function(chain, request) {
