@@ -1753,12 +1753,12 @@ async function fetchStateDataRobust(stateCode, attributeNames, datasetSpec) {
       if (typeof ruralLivingVal === 'string' && ruralLivingVal.trim() !== '') {
         const percent = parseFloat(ruralLivingVal.replace(/[^\d.\-]/g, ''));
         if (!isNaN(percent)) {
-          transformedRow['More Rural'] = percent <= 50 ? 'Yes' : 'No';
+          transformedRow['More Rural'] = percent <= 50 ? 'No' : 'Yes';
         } else {
           transformedRow['More Rural'] = null;
         }
       } else if (typeof ruralLivingVal === 'number') {
-        transformedRow['More Rural'] = ruralLivingVal <= 50 ? 'Yes' : 'No';
+        transformedRow['More Rural'] = ruralLivingVal <= 50 ? 'No' : 'Yes';
       } else {
         transformedRow['More Rural'] = null;
       }

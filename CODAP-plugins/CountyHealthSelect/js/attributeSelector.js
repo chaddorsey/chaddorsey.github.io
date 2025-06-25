@@ -213,7 +213,7 @@ function updateCategorySelectionSummary(categoryId) {
     const attr = groupedAttributes[categoryId].find(a => a.name === id);
     return attr ? attr.name : id;
   });
-  userSelection.textContent = names.slice(0, 3).join(', ') + (names.length > 3 ? ', ...' : '');
+  userSelection.textContent = names.join(', ');
 }
 
 /**
