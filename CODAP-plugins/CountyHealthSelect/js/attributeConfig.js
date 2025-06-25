@@ -20,7 +20,7 @@ const rawAttributes = [
   { name: 'boundary', group: 'demographics', type: 'boundary', formula: 'lookupBoundary(US_county_boundaries, County + ", " + State)', description: 'Boundary for the county, used for mapping.', hidden: true },
   { name: 'Rural Living', dataKey: 'Rural Living (%)', group: 'demographics', description: 'Percentage of population living in a rural area. A town with less than 2,500 residents is considered rural.' },
   { name: 'More Rural', group: 'demographics', type: 'categorical' },
-  { name: 'Proficient in English', dataKey: 'Proficient in English (%)', group: 'demographics', description: 'Percentage of the population that is proficient in the English language.' },
+  { name: 'Not proficient in English', dataKey: 'Proficient in English (%)', group: 'demographics', description: 'Percentage of the population that is not proficient in the English language.' },
   { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics' },
   { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics' },
   { name: 'Hispanic', dataKey: 'Hispanic (%)', group: 'demographics' },
@@ -62,8 +62,8 @@ const rawAttributes = [
 export const attributes = rawAttributes.map(attr => {
   // Extract unit from dataKey if present, otherwise from name
   const headerToParse = attr.dataKey || attr.name;
-  const { name, unit } = extractNameAndUnit(headerToParse);
-  return unit ? { ...attr, name, unit } : { ...attr, name };
+  const { unit } = extractNameAndUnit(headerToParse);
+  return unit ? { ...attr, unit } : { ...attr };
 });
 
 export { rawAttributes }; 
