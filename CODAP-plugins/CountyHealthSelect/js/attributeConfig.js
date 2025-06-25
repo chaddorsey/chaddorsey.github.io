@@ -32,7 +32,6 @@ const rawAttributes = [
   { name: 'Primary Care Doctor Rate', dataKey: 'Primary Care Doctor Rate (doctors/100,000)', group: 'health', description: 'Number of primary care physicians per 100,000 people.' },
   { name: 'Mental Health Providers', dataKey: 'Mental Health Providers (providers/ 100,000)', group: 'health', description: 'Number of mental health care providers per 100,000 people.' },
   { name: 'Median Household Income', dataKey: 'Median Household Income ($)', group: 'demographics', description: 'Median household income for adults.' },
-  { name: 'Income Level', group: 'demographics' },
   { name: 'Homeowners', dataKey: 'Homeowners (%)', group: 'demographics', description: 'Percentage of housing units that are owned by the occupants.' },
   { name: 'Rural Living', dataKey: 'Rural Living (%)', group: 'environment', description: 'Percentage of population living in a rural area. A town with less than 2,500 residents is considered rural.' },
   { name: 'Mostly Rural', group: 'environment' },

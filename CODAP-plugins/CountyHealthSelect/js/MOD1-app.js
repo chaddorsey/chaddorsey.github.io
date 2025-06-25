@@ -50,7 +50,6 @@ const DATASETS = [
       'Primary Care Doctor Rate',
       'Mental Health Providers',
       'Median Household Income',
-      'Income Level',
       'Homeowners',
       'Rural Living',
       'Mostly Rural',
@@ -139,10 +138,6 @@ const DATASETS = [
       {
           name: 'Median Household Income',
           description: 'Median household income for adults.',
-      },
-      {
-          name: 'Income Level',
-          description: 'Counties classified as low have average household incomes below the median for the state and those classified as high are above the median.',
       },
       {
           name: 'Homeowners',
