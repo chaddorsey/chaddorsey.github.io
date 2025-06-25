@@ -1740,15 +1740,29 @@ async function fetchStateDataRobust(stateCode, attributeNames, datasetSpec) {
         if (csvColumnName && csvRow.hasOwnProperty(csvColumnName)) {
           transformedRow[displayName] = csvRow[csvColumnName];
         } else {
-          // Attribute not available in this state's CSV
           transformedRow[displayName] = null;
-          
-          // Only log missing attributes that aren't core computed attributes
           if (!['boundary', 'County_Full'].includes(displayName)) {
             console.log(`[fetchStateDataRobust] State ${stateCode} - Missing data for attribute '${displayName}' (looking for CSV column '${csvColumnName}')`);
           }
         }
       });
+
+      // --- Add logic for 'More Rural' ---
+      // If 'Rural Living' is present and is a number, set 'More Rural' accordingly
+      const ruralLivingVal = transformedRow['Rural Living'];
+      if (typeof ruralLivingVal === 'string' && ruralLivingVal.trim() !== '') {
+        const percent = parseFloat(ruralLivingVal.replace(/[^\d.\-]/g, ''));
+        if (!isNaN(percent)) {
+          transformedRow['More Rural'] = percent <= 50 ? 'Yes' : 'No';
+        } else {
+          transformedRow['More Rural'] = null;
+        }
+      } else if (typeof ruralLivingVal === 'number') {
+        transformedRow['More Rural'] = ruralLivingVal <= 50 ? 'Yes' : 'No';
+      } else {
+        transformedRow['More Rural'] = null;
+      }
+      // --- End logic for 'More Rural' ---
 
       // Debug: Log the first transformed row to see what data we're actually creating
       if (index === 0) {

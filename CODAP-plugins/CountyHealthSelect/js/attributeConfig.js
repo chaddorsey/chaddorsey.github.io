@@ -34,7 +34,7 @@ const rawAttributes = [
   { name: 'Median Household Income', dataKey: 'Median Household Income ($)', group: 'demographics', description: 'Median household income for adults.' },
   { name: 'Homeowners', dataKey: 'Homeowners (%)', group: 'demographics', description: 'Percentage of housing units that are owned by the occupants.' },
   { name: 'Rural Living', dataKey: 'Rural Living (%)', group: 'environment', description: 'Percentage of population living in a rural area. A town with less than 2,500 residents is considered rural.' },
-  { name: 'Mostly Rural', group: 'environment' },
+  { name: 'More Rural', group: 'environment', type: 'categorical' },
   { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics' },
   { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics' },
   { name: 'Hispanic', dataKey: 'Hispanic (%)', group: 'demographics' },

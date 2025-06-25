@@ -52,7 +52,7 @@ const DATASETS = [
       'Median Household Income',
       'Homeowners',
       'Rural Living',
-      'Mostly Rural',
+      'More Rural',
       'Non-Hispanic Black',
       'Asian',
       'Hispanic',
@@ -148,8 +148,8 @@ const DATASETS = [
           description: 'Percentage of population living in a rural area. A town with less than 2&comma;500 residents is considered rural.',
       },
       {
-          name: 'Mostly Rural',
-          description: 'Counties are classified as mostly rural if 60% of the population lives in a rural area.',
+          name: 'More Rural',
+          description: 'Counties are classified as more rural if 60% of the population lives in a rural area.',
       },
       {
           name: 'Non-Hispanic Black',
