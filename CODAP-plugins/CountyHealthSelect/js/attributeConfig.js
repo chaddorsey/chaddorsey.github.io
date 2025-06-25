@@ -24,6 +24,8 @@ const rawAttributes = [
   { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics' },
   { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics' },
   { name: 'Hispanic', dataKey: 'Hispanic (%)', group: 'demographics' },
+  { name: 'American Indian & Alaska Native', dataKey: '% American Indian or Alaska Native', group: 'demographics', description: 'Percentage of the population that identifies as American Indian or Alaska Native. Source: County Health Rankings 2025.' },
+  { name: 'Native Hawaiian / Other Pacific Islander', dataKey: '% Native Hawaiian or Other Pacific Islander', group: 'demographics', description: 'Percentage of the population that identifies as Native Hawaiian or Other Pacific Islander. Source: County Health Rankings 2025.' },
   { name: 'Non-Hispanic White', dataKey: 'Non-Hispanic White (%)', group: 'demographics' },
   { name: 'Population', group: 'demographics', description: 'Total number of residents.' },
 
