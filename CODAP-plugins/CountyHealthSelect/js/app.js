@@ -982,10 +982,9 @@ function getAttributeByName(name) {
  * @return {[object] | undefined}
  */
 function resolveAttributes(datasetSpec, attributeNames) {
-  // --- Always use the full masterAttributeList for collection definition ---
-  // attributeNames should be masterAttributeList, not just selected or present in data
-  // Remove any filtering that restricts to selectedAttributeNames or data-present attributes
-  const allAttributeNames = [...attributeNames]; // Already ordered, deduped by caller
+  // Remove County_Full from attributeNames for CODAP table
+  const filteredAttributeNames = attributeNames.filter(name => name !== 'County_Full');
+  const allAttributeNames = [...filteredAttributeNames];
   console.log('[resolveAttributes] Using full masterAttributeList for collection definition:', allAttributeNames);
 
   let attributeList = allAttributeNames.map(function (attrName) {
@@ -1129,8 +1128,8 @@ function getCurrentDatasetSpec() {
       attr => datasetSpec.selectedAttributeNames.includes(attr.name)
     );
     
-    // Always include the core attributes
-    const coreAttributes = ['State', 'FIPS', 'County', 'County_Full', 'boundary'];
+    // Always include the core attributes (excluding County_Full)
+    const coreAttributes = ['State', 'FIPS', 'County', 'boundary'];
     coreAttributes.forEach(attrName => {
       if (!datasetSpec.overriddenAttributes.some(attr => attr.name === attrName)) {
         const originalAttr = DATASETS[sourceIX].overriddenAttributes.find(attr => attr.name === attrName);
@@ -1443,7 +1442,7 @@ async function fetchDataAndProcess() {
       }
     });
     // Always include core attributes at the start, in canonical order
-    const coreAttributes = ['State', 'FIPS', 'County', 'County_Full', 'boundary'];
+    const coreAttributes = ['State', 'FIPS', 'County', 'boundary'];
     coreAttributes.forEach((attr, idx) => {
       const existingIdx = masterAttributeList.indexOf(attr);
       if (existingIdx > -1 && existingIdx !== idx) {
