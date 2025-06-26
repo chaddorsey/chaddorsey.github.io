@@ -20,7 +20,7 @@
 /*global Papa:true*/
 import {COUNTY_POPULATION_DATA, STATE_POPULATION_DATA} from './data.js';
 import * as ui from './ui.js'
-import { getSelectedAttributes, hasSelectedAttributes } from './attributeSelector.js';
+import { getSelectedAttributes, hasSelectedAttributes, initializeAttributeSelector } from './attributeSelector.js';
 import { attributes as attributeConfigAttributes } from './attributeConfig.js';
 import { rawAttributes } from './attributeConfig.js'; // Import rawAttributes for dataKey mapping
 import { extractNameAndUnit } from './attributeUtils.js';
@@ -759,6 +759,10 @@ async function clearDataHandler() {
   }
   try {
     await clearDataByName(currDatasetSpec.name);
+    // --- Reset plugin state ---
+    masterStateList = [];
+    masterAttributeList = [];
+    initializeAttributeSelector(); // Reset attribute selector UI and state
     // Optionally, update UI or notify user of success
   } catch (err) {
     // Optionally, handle error
