@@ -1440,27 +1440,28 @@ async function fetchDataAndProcess() {
     console.log('[Phase 1] Current cases count:', currentCases.length);
     console.log('[Phase 1] Current cases (first 3):', currentCases.slice(0, 3));
 
-    // --- Phase 2: Maintain persistent master lists for all states and attributes ---
-    // Always update masterAttributeList and masterStateList to include all ever added
+    // --- Phase 2: Accumulate all attributes ever added, preserving UI order ---
     selectedAttributes.forEach(attr => {
       if (!masterAttributeList.includes(attr)) {
         masterAttributeList.push(attr);
       }
     });
-    // Always include core attributes at the start, in canonical order
-    const coreAttributes = ['State', 'FIPS', 'County', 'boundary'];
-    coreAttributes.forEach((attr, idx) => {
-      const existingIdx = masterAttributeList.indexOf(attr);
-      if (existingIdx > -1 && existingIdx !== idx) {
-        masterAttributeList.splice(existingIdx, 1);
-        masterAttributeList.splice(idx, 0, attr);
-      } else if (existingIdx === -1) {
-        masterAttributeList.splice(idx, 0, attr);
-      }
-    });
-    // Remove duplicates while preserving order
-    masterAttributeList = masterAttributeList.filter((attr, idx, arr) => arr.indexOf(attr) === idx);
-    console.log('[Phase 2] masterAttributeList (ordered):', masterAttributeList);
+    // Sort masterAttributeList to match UI order (rawAttributes), with 'boundary' always last
+    const canonicalOrder = rawAttributes.map(attr => attr.name).filter(name => name !== 'County_Full');
+    masterAttributeList = masterAttributeList
+      .filter(attr => attr !== 'County_Full')
+      .sort((a, b) => {
+        if (a === 'boundary') return 1;
+        if (b === 'boundary') return -1;
+        return canonicalOrder.indexOf(a) - canonicalOrder.indexOf(b);
+      });
+    // Ensure 'boundary' is last if present
+    const boundaryIdx = masterAttributeList.indexOf('boundary');
+    if (boundaryIdx > -1) {
+      masterAttributeList.splice(boundaryIdx, 1);
+      masterAttributeList.push('boundary');
+    }
+    console.log('[Phase 2] masterAttributeList (sorted to UI order):', masterAttributeList);
 
     // --- State order: preserve order of addition ---
     const stateSelect = document.querySelector('#state-select');
