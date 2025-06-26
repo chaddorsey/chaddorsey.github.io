@@ -983,7 +983,13 @@ function getAttributeByName(name) {
  */
 function resolveAttributes(datasetSpec, attributeNames) {
   // Remove County_Full from attributeNames for CODAP table
-  const filteredAttributeNames = attributeNames.filter(name => name !== 'County_Full');
+  let filteredAttributeNames = attributeNames.filter(name => name !== 'County_Full');
+  // Ensure 'boundary' is last if present
+  const boundaryIdx = filteredAttributeNames.indexOf('boundary');
+  if (boundaryIdx > -1) {
+    filteredAttributeNames.splice(boundaryIdx, 1);
+    filteredAttributeNames.push('boundary');
+  }
   const allAttributeNames = [...filteredAttributeNames];
   console.log('[resolveAttributes] Using full masterAttributeList for collection definition:', allAttributeNames);
 
