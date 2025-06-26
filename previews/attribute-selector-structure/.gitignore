@@ -21,3 +21,8 @@ node_modules/
 
 # Also exclude any paths that are too long or problematic
 **/attribute-selector-structure/
+CODAP-plugins/CountyHealthSelect/.DS_Store
+CODAP-plugins/CountyHealthSelect/.DS_Store
+CODAP-plugins/CountyHealthSelect/assets/.DS_Store
+CODAP-plugins/CountyHealthSelect/assets/data/.DS_Store
+CODAP-plugins/CountyHealthSelect/assets/data/2025/.DS_Store

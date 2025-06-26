@@ -50,10 +50,9 @@ const DATASETS = [
       'Primary Care Doctor Rate',
       'Mental Health Providers',
       'Median Household Income',
-      'Income Level',
       'Homeowners',
       'Rural Living',
-      'Mostly Rural',
+      'More Rural',
       'Non-Hispanic Black',
       'Asian',
       'Hispanic',
@@ -141,10 +140,6 @@ const DATASETS = [
           description: 'Median household income for adults.',
       },
       {
-          name: 'Income Level',
-          description: 'Counties classified as low have average household incomes below the median for the state and those classified as high are above the median.',
-      },
-      {
           name: 'Homeowners',
           description: 'Percentage of housing units that are owned by the occupants.',
       },
@@ -153,8 +148,8 @@ const DATASETS = [
           description: 'Percentage of population living in a rural area. A town with less than 2&comma;500 residents is considered rural.',
       },
       {
-          name: 'Mostly Rural',
-          description: 'Counties are classified as mostly rural if 60% of the population lives in a rural area.',
+          name: 'More Rural',
+          description: 'Counties are classified as more rural if 60% of the population lives in a rural area.',
       },
       {
           name: 'Non-Hispanic Black',

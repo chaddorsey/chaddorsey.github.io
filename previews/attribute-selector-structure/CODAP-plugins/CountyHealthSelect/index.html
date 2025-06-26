@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="description"
         content="A CODAP plugin to retrieve county health ranking data for United States counties">
-  <title>County Health Rankings</title>
+  <title>County Health Rankings (2024)</title>
   <script src="lib/iframe-phone.js"></script>
   <script src="lib/CodapInterface.js"></script>
   <script src="lib/papaparse.min.js"></script>
@@ -69,7 +69,6 @@
           <option value="CO">Colorado</option>
           <option value="CT">Connecticut</option>
           <option value="DE">Delaware</option>
-          <option value="DC">District of Columbia</option>
           <option value="FL">Florida</option>
           <option value="GA">Georgia</option>
           <option value="HI">Hawaii</option>
@@ -155,34 +154,34 @@
       </div>
     </div>
 
-    <!-- Environment Category -->
-    <div class="wx-dropdown wx-up" id="environment-section">
+    <!-- Education / Youth Category -->
+    <div class="wx-dropdown wx-up" id="education_youth-section">
       <div class="wx-section-header-line wx-dropdown-header" title="Click to expand/collapse">
-        <span class="wx-section-title">Environment</span>
+        <span class="wx-section-title">Education / Youth</span>
         <span class="wx-selection-count">0</span>
         <span class="wx-user-selection"></span>
         <span class="wx-dropdown-indicator"></span>
       </div>
       <div class="wx-dropdown-body">
         <table class="attributeCheckboxes">
-          <tbody id="environment-attributes">
+          <tbody id="education_youth-attributes">
             <!-- Attribute checkboxes and descriptions will be rendered here by JS -->
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- Education Category -->
-    <div class="wx-dropdown wx-up" id="education-section">
+    <!-- Wealth / Infrastructure Category -->
+    <div class="wx-dropdown wx-up" id="wealth_infrastructure-section">
       <div class="wx-section-header-line wx-dropdown-header" title="Click to expand/collapse">
-        <span class="wx-section-title">Education</span>
+        <span class="wx-section-title">Wealth / Infrastructure</span>
         <span class="wx-selection-count">0</span>
         <span class="wx-user-selection"></span>
         <span class="wx-dropdown-indicator"></span>
       </div>
       <div class="wx-dropdown-body">
         <table class="attributeCheckboxes">
-          <tbody id="education-attributes">
+          <tbody id="wealth_infrastructure-attributes">
             <!-- Attribute checkboxes and descriptions will be rendered here by JS -->
           </tbody>
         </table>
@@ -193,10 +192,19 @@
   <!-- Updated Summary Area -->
   <div id="wx-summary-section">
     <div class="wx-section-header-line summary-options">
-      <span class="wx-status-graphic"></span>
-      <span class="wx-message-area">Ready to fetch</span>
-      <button class="fe-clear-button wx-button" title="Clear Dataset in CODAP">Clear Data</button>
-      <button class="fe-fetch-button wx-button" title="Get data and send to CODAP">Add State Data</button>
+      <a href="#" class="clear-data-link" title="Clear Dataset in CODAP">
+        Clear Data
+        <span class="clear-data-icon" aria-hidden="true" style="display:inline-block; vertical-align:middle; margin-left:4px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14z" stroke="#177991" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <line x1="10" y1="11" x2="10" y2="17" stroke="#177991" stroke-width="2" stroke-linecap="round"/>
+            <line x1="14" y1="11" x2="14" y2="17" stroke="#177991" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+      </a>
+      <div class="button-group">
+        <button class="fe-fetch-button wx-button" title="Get data and send to CODAP">Add State Data</button>
+      </div>
     </div>
   </div>
 
@@ -204,6 +212,18 @@
 
   </p>
 </main>
+<div id="clear-data-modal" class="modal-overlay fe-hide" tabindex="-1" role="dialog" aria-modal="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">Confirm Data Deletion</div>
+      <div class="modal-body">Are you sure you want to clear all data? This action cannot be undone.</div>
+      <div class="modal-footer">
+        <button class="modal-confirm fe-button">Delete</button>
+        <button class="modal-cancel fe-button">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="js/index.js" type="module"></script>
 </body>
 </html>

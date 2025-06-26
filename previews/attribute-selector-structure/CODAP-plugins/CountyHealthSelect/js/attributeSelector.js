@@ -41,8 +41,10 @@ attributeGroups.forEach(group => {
   attributeSelectorState.categories[group.id] = {
     expanded: false,
     enabled: true,
-    allSelected: true,
-    attributes: new Set(groupedAttributes[group.id].map(attr => attr.name))
+    allSelected: group.id === 'demographics',
+    attributes: group.id === 'demographics'
+      ? new Set(groupedAttributes[group.id].map(attr => attr.name))
+      : new Set()
   };
 });
 
@@ -51,10 +53,12 @@ attributeGroups.forEach(group => {
  */
 function initializeAttributeSelector() {
   console.log('[DEBUG] initializeAttributeSelector called');
-  // Initialize all attributes as selected
+  // Initialize only Demographics attributes as selected
   attributeGroups.forEach(group => {
-    attributeSelectorState.categories[group.id].attributes = new Set(groupedAttributes[group.id].map(attr => attr.name));
-    attributeSelectorState.categories[group.id].allSelected = true;
+    attributeSelectorState.categories[group.id].attributes = group.id === 'demographics'
+      ? new Set(groupedAttributes[group.id].map(attr => attr.name))
+      : new Set();
+    attributeSelectorState.categories[group.id].allSelected = group.id === 'demographics';
   });
   console.log('[DEBUG] attributeSelectorState after initialize:', JSON.stringify(attributeSelectorState));
   // Generate checkboxes
@@ -71,8 +75,6 @@ function initializeAttributeSelector() {
     updateCategorySelectionSummary(group.id);
     updateCategorySelectionCount(group.id);
   });
-  // Update summary area
-  updateSummaryArea();
 }
 
 /**
@@ -120,7 +122,6 @@ function generateAttributeCheckboxes() {
         generateAttributeCheckboxes();
         updateCategorySelectionSummary(group.id);
         updateCategorySelectionCount(group.id);
-        updateSummaryArea();
         notifyAttributeSelectionChanged();
       });
       linkFlex.appendChild(selectAllLink);
@@ -138,7 +139,6 @@ function generateAttributeCheckboxes() {
       generateAttributeCheckboxes();
       updateCategorySelectionSummary(group.id);
       updateCategorySelectionCount(group.id);
-      updateSummaryArea();
       notifyAttributeSelectionChanged();
     });
     linkFlex.appendChild(clearAllLink);
@@ -200,7 +200,6 @@ function handleAttributeCheckboxChange(event, categoryId, attributeId) {
   generateAttributeCheckboxes();
   updateCategorySelectionSummary(categoryId);
   updateCategorySelectionCount(categoryId);
-  updateSummaryArea();
   notifyAttributeSelectionChanged();
 }
 
@@ -214,7 +213,7 @@ function updateCategorySelectionSummary(categoryId) {
     const attr = groupedAttributes[categoryId].find(a => a.name === id);
     return attr ? attr.name : id;
   });
-  userSelection.textContent = names.slice(0, 3).join(', ') + (names.length > 3 ? ', ...' : '');
+  userSelection.textContent = names.join(', ');
 }
 
 /**
@@ -225,23 +224,6 @@ function updateCategorySelectionCount(categoryId) {
   const selectedCount = attributeSelectorState.categories[categoryId].attributes.size;
   // Only show the selected count, not 'selected/total'
   countSpan.textContent = `${selectedCount}`;
-}
-
-/**
- * Update the summary area at the bottom
- */
-function updateSummaryArea() {
-  const msg = document.querySelector('.wx-message-area');
-  const getDataButton = document.querySelector('.fe-fetch-button');
-  const hasAttributes = hasSelectedAttributes();
-  // You may want to check for state selection as well
-  if (hasAttributes) {
-    msg.textContent = 'Ready to fetch';
-    getDataButton.removeAttribute('disabled');
-  } else {
-    msg.textContent = 'Select at least one attribute';
-    getDataButton.setAttribute('disabled', 'disabled');
-  }
 }
 
 /**
