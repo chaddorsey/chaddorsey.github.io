@@ -62,8 +62,8 @@ const rawAttributes = [
 export const attributes = rawAttributes.map(attr => {
   // Extract unit from dataKey if present, otherwise from name
   const headerToParse = attr.dataKey || attr.name;
-  const { unit } = extractNameAndUnit(headerToParse);
-  return unit ? { ...attr, unit } : { ...attr };
+  const { name: cleanName, unit } = extractNameAndUnit(headerToParse);
+  return unit ? { ...attr, name: cleanName, unit } : { ...attr };
 });
 
 export { rawAttributes }; 
