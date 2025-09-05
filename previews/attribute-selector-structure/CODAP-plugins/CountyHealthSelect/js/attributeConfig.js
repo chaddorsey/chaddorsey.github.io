@@ -47,7 +47,7 @@ const rawAttributes = [
   // Education / Youth
   { name: 'Students Graduating from High School (%)', dataKey: 'Students Graduating from High School (%)', group: 'education_youth', description: 'Percentage of students that graduate from high school in 4 years.', type: 'numerical' },
   { name: 'Some College (%)', dataKey: 'Some College (%)', group: 'education_youth', description: 'Percentage of people ages 25-44 with at least some education beyond high school.', type: 'numerical' },
-  { name: 'Teen Birth Rate', dataKey: 'Teen Birth Rate (births/per teens)', group: 'education_youth', description: 'Births per 1,000 females ages 15-19.', type: 'numerical' },
+  { name: 'Teen Birth Rate', dataKey: 'Teen Birth Rate (births/per 1000 teens)', group: 'education_youth', description: 'Births per 1,000 females ages 15-19.', type: 'numerical' },
   { name: 'Youth Not in School or Employment', dataKey: 'Youth Not in School or Employment (%)', group: 'education_youth', description: 'Percentage of teens and young adults ages 16-19 who are neither working nor in school.', type: 'numerical' },
 
   // Wealth / Infrastructure
