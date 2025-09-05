@@ -19,14 +19,14 @@ const rawAttributes = [
   { name: 'County', group: 'demographics', type: 'categorical' },
   { name: 'boundary', group: 'demographics', type: 'boundary', formula: 'lookupBoundary(US_county_boundaries, County + ", " + State)', description: 'Boundary for the county, used for mapping.', hidden: true },
   { name: 'Rural Living', dataKey: 'Rural Living (%)', group: 'demographics', description: 'Percentage of population living in a rural area. A town with less than 2,500 residents is considered rural.', type: 'numerical' },
-  { name: 'More Rural', group: 'demographics', type: 'categorical' },
+  { name: 'More Rural', group: 'demographics', description: 'Rural classification for the county. Categorized as Yes if the county\'s Rural Living value is greater than 50% and No if is equal to or less than 50%.', type: 'categorical' },
   { name: 'Not proficient in English', dataKey: 'Proficient in English (%)', group: 'demographics', description: 'Percentage of the population that is not proficient in the English language.', type: 'numerical' },
-  { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics', type: 'numerical' },
-  { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics', type: 'numerical' },
-  { name: 'Hispanic', dataKey: 'Hispanic (%)', group: 'demographics', type: 'numerical' },
+  { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics', description: 'Percentage of population identifying as non-Hispanic Black or African American.', type: 'numerical' },
+  { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics', description: 'Percentage of population identifying as Asian.', type: 'numerical' },
+  { name: 'Hispanic', dataKey: 'Hispanic (%)', group: 'demographics', description: 'Percentage of population identifying as Hispanic.', type: 'numerical' },
   { name: 'American Indian & Alaska Native', dataKey: '% American Indian or Alaska Native', group: 'demographics', description: 'Percentage of the population that identifies as American Indian or Alaska Native. Source: County Health Rankings 2025.', type: 'numerical' },
   { name: 'Native Hawaiian / Other Pacific Islander', dataKey: '% Native Hawaiian or Other Pacific Islander', group: 'demographics', description: 'Percentage of the population that identifies as Native Hawaiian or Other Pacific Islander. Source: County Health Rankings 2025.', type: 'numerical' },
-  { name: 'Non-Hispanic White', dataKey: 'Non-Hispanic White (%)', group: 'demographics', type: 'numerical' },
+  { name: 'Non-Hispanic White', dataKey: 'Non-Hispanic White (%)', group: 'demographics', description: 'Percentage of population identifying as non-Hispanic white.', type: 'numerical' },
   { name: 'Population', group: 'demographics', description: 'Total number of residents.', type: 'numerical' },
 
   // Health
@@ -53,7 +53,7 @@ const rawAttributes = [
   // Wealth / Infrastructure
   { name: 'Children in Poverty', dataKey: 'Children in Poverty (%)', group: 'wealth_infrastructure', description: 'Percentage of people under age 18 living in a household whose income is below the poverty level.', type: 'numerical' },
   { name: 'Median Household Income', dataKey: 'Median Household Income ($)', group: 'wealth_infrastructure', description: 'Median household income for adults.', type: 'numerical' },
-  { name: 'Income Level', dataKey: 'Income Level', group: 'wealth_infrastructure', description: 'Income level classification for the county.', type: 'categorical' },
+  { name: 'Income Level', dataKey: 'Income Level', group: 'wealth_infrastructure', description: 'Income level classification for the county. Categorized as High if the county\'s Median Household Income is greater than or equal to the median value for the state and Low if less than.', type: 'categorical' },
   { name: 'Homeowners', dataKey: 'Homeowners (%)', group: 'wealth_infrastructure', description: 'Percentage of housing units that are owned by the occupants.', type: 'numerical' },
   { name: 'Broadband Access', dataKey: 'Broadband Access (%)', group: 'wealth_infrastructure', description: 'Percentage of households with broadband internet connection.', type: 'numerical' },
   { name: 'Severe Housing Problems', dataKey: 'Severe Housing Problems (%)', group: 'wealth_infrastructure', description: 'Percentage of households with at least one of these problems: overcrowding, high housing costs, lack of kitchen facilities, or lack of plumbing facilities.', type: 'numerical' },
