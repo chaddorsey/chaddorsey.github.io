@@ -72,7 +72,7 @@ const shortLabel = (s: string) => s.replace("(interdisciplinary)", "").replace("
 // --------------------- AUDIO FX --------------------- //
 function useTickSfx() {
   const ctxRef = useRef<AudioContext | null>(null);
-  useEffect(() => () => ctxRef.current?.close(), []);
+  useEffect(() => () => { void ctxRef.current?.close(); }, []);
   const ensure = () => (ctxRef.current ||= new (window.AudioContext || (window as any).webkitAudioContext)());
   const tick = (freq = 900) => {
     try {
