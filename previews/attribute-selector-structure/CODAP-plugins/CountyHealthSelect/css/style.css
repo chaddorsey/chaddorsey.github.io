@@ -744,6 +744,33 @@ input[type=radio]:checked:before {
 .wx-dropdown.wx-down > .wx-dropdown-header > .wx-dropdown-indicator {
   transform: rotate(180deg);
 }
+
+/* --- Select All Control Styles --- */
+.wx-select-all-container {
+  padding: 8px 0;
+  text-align: left;
+  margin-bottom: 8px;
+}
+
+.wx-select-all-link {
+  font-family: Montserrat, sans-serif;
+  font-size: 14px;
+  color: var(--teal-dark);
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.wx-select-all-link:hover {
+  color: var(--teal-primary);
+  text-decoration: underline;
+}
+
+.wx-select-all-link:focus {
+  outline: 2px solid var(--teal-light);
+  outline-offset: 2px;
+}
 .wx-dropdown-body {
   padding: 0 12px 8px 12px;
   overflow-y: hidden;
