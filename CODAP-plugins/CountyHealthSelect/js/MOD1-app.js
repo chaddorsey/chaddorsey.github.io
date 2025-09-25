@@ -66,7 +66,7 @@ const DATASETS = [
       'Firearm Death Rate',
       'Juvenile Arrest Rate',
       'Severe Housing Problems',
-      'Proficient in English',
+      'Not proficient in English',
       'Youth Not in School or Employment',
     ],
     overriddenAttributes: [
@@ -204,8 +204,8 @@ const DATASETS = [
           description: 'Percentage of households with at least one of these problems: overcrowding&comma; high housing costs&comma; lack of kitchen facilities&comma; or lack of plumbing facilities',
       },
       {
-          name: 'Proficient in English',
-          description: 'Percentage of the population that is proficient in the English language.',
+          name: 'Not proficient in English',
+          description: 'Percentage of the population that is not proficient in the English language.',
       },
       {
           name: 'Youth Not in School or Employment',
