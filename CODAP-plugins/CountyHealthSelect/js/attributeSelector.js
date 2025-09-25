@@ -75,6 +75,16 @@ function initializeAttributeSelector() {
     updateCategorySelectionSummary(group.id);
     updateCategorySelectionCount(group.id);
   });
+  
+  // Initialize Select All link
+  const selectAllLink = document.getElementById('select-all-link');
+  if (selectAllLink) {
+    selectAllLink.addEventListener('click', (event) => {
+      event.preventDefault();
+      toggleSelectAll();
+    });
+    updateSelectAllLinkText();
+  }
 }
 
 /**
@@ -108,12 +118,12 @@ function generateAttributeCheckboxes() {
     if (allSelected) {
       const allSelectedText = document.createElement('span');
       allSelectedText.className = 'wx-all-selected-text';
-      allSelectedText.textContent = 'All attributes selected';
+      allSelectedText.textContent = `All ${group.title} attributes selected`;
       linkFlex.appendChild(allSelectedText);
     } else {
       const selectAllLink = document.createElement('a');
       selectAllLink.href = '#';
-      selectAllLink.textContent = 'Select all';
+      selectAllLink.textContent = `Select all ${group.title} attributes`;
       selectAllLink.className = 'wx-select-all-link';
       selectAllLink.addEventListener('click', (event) => {
         event.preventDefault();
@@ -122,6 +132,7 @@ function generateAttributeCheckboxes() {
         generateAttributeCheckboxes();
         updateCategorySelectionSummary(group.id);
         updateCategorySelectionCount(group.id);
+        updateSelectAllLinkText();
         notifyAttributeSelectionChanged();
       });
       linkFlex.appendChild(selectAllLink);
@@ -130,7 +141,7 @@ function generateAttributeCheckboxes() {
     // Clear all link (always shown)
     const clearAllLink = document.createElement('a');
     clearAllLink.href = '#';
-    clearAllLink.textContent = 'Clear all';
+    clearAllLink.textContent = 'Clear';
     clearAllLink.className = 'wx-clear-all-link';
     clearAllLink.addEventListener('click', (event) => {
       event.preventDefault();
@@ -139,6 +150,7 @@ function generateAttributeCheckboxes() {
       generateAttributeCheckboxes();
       updateCategorySelectionSummary(group.id);
       updateCategorySelectionCount(group.id);
+      updateSelectAllLinkText();
       notifyAttributeSelectionChanged();
     });
     linkFlex.appendChild(clearAllLink);
@@ -200,6 +212,7 @@ function handleAttributeCheckboxChange(event, categoryId, attributeId) {
   generateAttributeCheckboxes();
   updateCategorySelectionSummary(categoryId);
   updateCategorySelectionCount(categoryId);
+  updateSelectAllLinkText();
   notifyAttributeSelectionChanged();
 }
 
@@ -345,6 +358,102 @@ function hasSelectedAttributes() {
   return false;
 }
 
+/**
+ * Check if all selectable attributes are currently selected
+ * @returns {boolean} True if all attributes are selected
+ */
+function allAttributesSelected() {
+  for (const categoryId in attributeSelectorState.categories) {
+    if (isCategoryEnabled(categoryId)) {
+      const categoryState = attributeSelectorState.categories[categoryId];
+      const totalAttributes = groupedAttributes[categoryId].length;
+      if (categoryState.attributes.size !== totalAttributes) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+/**
+ * Select all attributes across all categories
+ */
+function selectAllAttributes() {
+  attributeGroups.forEach(group => {
+    if (attributeSelectorState.categories[group.id].enabled) {
+      // Select all attributes for this category
+      attributeSelectorState.categories[group.id].attributes = new Set(groupedAttributes[group.id].map(attr => attr.name));
+      attributeSelectorState.categories[group.id].allSelected = true;
+    }
+  });
+  
+  // Update UI
+  generateAttributeCheckboxes();
+  attributeGroups.forEach(group => {
+    updateCategorySelectionSummary(group.id);
+    updateCategorySelectionCount(group.id);
+  });
+  
+  // Update Select All link text
+  updateSelectAllLinkText();
+  
+  // Notify of changes
+  notifyAttributeSelectionChanged();
+}
+
+/**
+ * Deselect all attributes across all categories
+ */
+function deselectAllAttributes() {
+  attributeGroups.forEach(group => {
+    if (attributeSelectorState.categories[group.id].enabled) {
+      // Clear all attributes for this category
+      attributeSelectorState.categories[group.id].attributes = new Set();
+      attributeSelectorState.categories[group.id].allSelected = false;
+    }
+  });
+  
+  // Update UI
+  generateAttributeCheckboxes();
+  attributeGroups.forEach(group => {
+    updateCategorySelectionSummary(group.id);
+    updateCategorySelectionCount(group.id);
+  });
+  
+  // Update Select All link text
+  updateSelectAllLinkText();
+  
+  // Notify of changes
+  notifyAttributeSelectionChanged();
+}
+
+/**
+ * Toggle between select all and deselect all
+ */
+function toggleSelectAll() {
+  if (allAttributesSelected()) {
+    deselectAllAttributes();
+  } else {
+    selectAllAttributes();
+  }
+}
+
+/**
+ * Update the Select All link text based on current selection state
+ */
+function updateSelectAllLinkText() {
+  const selectAllLink = document.getElementById('select-all-link');
+  if (selectAllLink) {
+    if (allAttributesSelected()) {
+      selectAllLink.textContent = 'Deselect All';
+      selectAllLink.title = 'Deselect all attributes';
+    } else {
+      selectAllLink.textContent = 'Select All';
+      selectAllLink.title = 'Select all attributes';
+    }
+  }
+}
+
 // TEMP: Expose state and getter for debugging in browser console
 window.attributeSelectorState = attributeSelectorState;
 window.getSelectedAttributes = getSelectedAttributes;
@@ -356,5 +465,7 @@ export {
   getSelectedAttributes,
   getSelectedAttributesForCategory,
   isCategoryEnabled,
-  hasSelectedAttributes
+  hasSelectedAttributes,
+  toggleSelectAll,
+  updateSelectAllLinkText
 }; 
