@@ -19,7 +19,7 @@ const rawAttributes = [
   { name: 'County', group: 'demographics', type: 'categorical' },
   { name: 'boundary', group: 'demographics', type: 'boundary', formula: 'lookupBoundary(US_county_boundaries, County + ", " + State)', description: 'Boundary for the county, used for mapping.', hidden: true },
   { name: 'Rural Living', dataKey: 'Rural Living (%)', group: 'demographics', description: 'Percentage of population living in a rural area. A town with less than 2,500 residents is considered rural.', type: 'numerical' },
-  { name: 'More Rural', group: 'demographics', description: 'Rural classification for the county. Categorized as Yes if the county\'s Rural Living value is greater than 50% and No if is equal to or less than 50%.', type: 'categorical' },
+  { name: 'Rural / Urban', group: 'demographics', description: 'Rural classification for the county. Categorized as Rural if the county\'s Rural Living value is greater than 50% and Urban if is equal to or less than 50%.', type: 'categorical' },
   { name: 'Not proficient in English', dataKey: 'Not Proficient in English (%)', group: 'demographics', description: 'Percentage of the population that is not proficient in the English language.', type: 'numerical' },
   { name: 'Non-Hispanic Black', dataKey: 'Non-Hispanic Black (%)', group: 'demographics', description: 'Percentage of population identifying as non-Hispanic Black or African American.', type: 'numerical' },
   { name: 'Asian', dataKey: 'Asian (%)', group: 'demographics', description: 'Percentage of population identifying as Asian.', type: 'numerical' },
