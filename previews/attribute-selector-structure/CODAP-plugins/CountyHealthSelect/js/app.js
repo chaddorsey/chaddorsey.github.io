@@ -1661,22 +1661,22 @@ async function fetchStateDataRobust(stateCode, attributeNames, datasetSpec) {
         }
       });
 
-      // --- Add logic for 'More Rural' ---
-      // If 'Rural Living' is present and is a number, set 'More Rural' accordingly
+      // --- Add logic for 'Rural / Urban' ---
+      // If 'Rural Living' is present and is a number, set 'Rural / Urban' accordingly
       const ruralLivingVal = transformedRow['Rural Living'];
       if (typeof ruralLivingVal === 'string' && ruralLivingVal.trim() !== '') {
         const percent = parseFloat(ruralLivingVal.replace(/[^\d.\-]/g, ''));
         if (!isNaN(percent)) {
-          transformedRow['More Rural'] = percent <= 50 ? 'No' : 'Yes';
+          transformedRow['Rural / Urban'] = percent <= 50 ? 'Urban' : 'Rural';
         } else {
-          transformedRow['More Rural'] = null;
+          transformedRow['Rural / Urban'] = null;
         }
       } else if (typeof ruralLivingVal === 'number') {
-        transformedRow['More Rural'] = ruralLivingVal <= 50 ? 'No' : 'Yes';
+        transformedRow['Rural / Urban'] = ruralLivingVal <= 50 ? 'Urban' : 'Rural';
       } else {
-        transformedRow['More Rural'] = null;
+        transformedRow['Rural / Urban'] = null;
       }
-      // --- End logic for 'More Rural' ---
+      // --- End logic for 'Rural / Urban' ---
 
       // Debug: Log the first transformed row to see what data we're actually creating
       if (index === 0) {
